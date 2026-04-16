@@ -1,14 +1,21 @@
-const express = require('express');
+const express = require("express");
 const routes = express.Router();
-const db = require('../db');
 
-routes.get('/', (req, res) => {
-  db.query('SELECT * FROM modules', (err, results) => {
-    if (err) throw err;
-    res.json(results);
-  });
-});
+const modulesController = require('../controllers/modulesController');
 
+// get all users
+routes.get('/', modulesController.getAllModules);
 
+// to get one particular user
+routes.get('/:id', modulesController.getModuleById);
+
+// to create a new user
+routes.post('/', modulesController.createModule);
+
+// to modify the informations of a certain user 
+routes.put('/:id', modulesController.updateModule);
+
+// to delete a certain user
+routes.delete('/:id', modulesController.deleteModule);
 
 module.exports = routes;
