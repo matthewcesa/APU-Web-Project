@@ -1,4 +1,4 @@
-const modules = require('../modules/modulesModel');
+const modules = require('../models/modulesModel');
 
 exports.getAllModules = (req,res) => {
     modules.getAll((err, results) => { 
