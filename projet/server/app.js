@@ -17,13 +17,22 @@ app.get('/', (req, res) => {
 const coursesRoute = require('./routes/courses');
 const usersRoute = require('./routes/users');
 const courses_join_codes_Route = require('./routes/course_join_codes');
-const modulesRoute = require('./routes/modules')
-const courses_enrollmentsRoute = require('./routes/course_enrollments');
+const modulesRoute = require('./routes/modules.js')
+const courses_enrollmentsRoute = require('./routes/course_enrollments')
+const quizzRoute= require('./routes/quizzes');
+const questionsRoute = require('./routes/questions.js');
+const questionOptionsRoute = require('./routes/questionOptions.js');
+const attemptsRoute = require('./routes/attempts.js');
+const attemptAnswersRoute = require('./routes/attemptAnswers.js');
 app.use('/api/courses', coursesRoute);
 app.use('/api/users', usersRoute);
 app.use('/api/modules', modulesRoute);
-app.use('/api/courses_join_codes', courses_join_codes_Route);
 app.use('/api/courses_enrollments', courses_enrollmentsRoute);
+app.use('/api/quizzes', quizzRoute );
+app.use('/api/questions', questionsRoute);
+app.use('/api/questionOptionsRoute', questionOptionsRoute);
+app.use('./api/attempts', attemptsRoute);
+app.use('/api/attemtAnswers', attemptAnswersRoute);
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
