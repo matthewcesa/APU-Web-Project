@@ -16,7 +16,6 @@ app.get('/', (req, res) => {
 
 const coursesRoute = require('./routes/courses');
 const usersRoute = require('./routes/users');
-const courses_join_codes_Route = require('./routes/course_join_codes');
 const modulesRoute = require('./routes/modules.js')
 const courses_enrollmentsRoute = require('./routes/course_enrollments')
 const quizzRoute= require('./routes/quizzes');

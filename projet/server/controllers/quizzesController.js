@@ -1,8 +1,8 @@
 const quizz = require('../models/quizzesModel')
 
 // GET ALL quizzes
-quizz.getAllQuizzes = (req, res) => {
-  Course.getAll((err, results) => {
+exports.getAllQuizzes = (req, res) => {
+  quizz.getAll((err, results) => {
     if (err) return res.status(500).json(err)
     res.json(results)
   })
