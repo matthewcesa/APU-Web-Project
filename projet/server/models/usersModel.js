@@ -34,8 +34,8 @@ exports.getAll = (callback) => {
 
 // GET one user
 exports.getById = (id, callback) => {
-  db.query('SELECT * FROM Users WHERE id = ?', [id], callback);
-};
+  db.query('SELECT * FROM Users WHERE user_id = ?', [id], callback)
+}
 
 // CREATE one user
 exports.create = (data, callback) => {
@@ -44,10 +44,11 @@ exports.create = (data, callback) => {
 
 // UPDATE one user
 exports.update = (id, data, callback) => {
-  db.query('UPDATE Users SET ? WHERE id = ?', [data, id], callback);
-};
+  db.query('UPDATE Users SET ? WHERE user_id = ?', [data, id], callback)
+}
+
 
 // DELETE one user
 exports.delete = (id, callback) => {
-  db.query('DELETE FROM Users WHERE id = ?', [id], callback);
-};
+  db.query('DELETE FROM Users WHERE user_id = ?', [id], callback)
+}
