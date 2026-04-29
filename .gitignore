@@ -1,5 +1,6 @@
 node_modules/
 projet/node_modules/
+projet\node_modules\
 client/node_modules/
 server/node_modules/
 
