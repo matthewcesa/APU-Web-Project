@@ -29,9 +29,9 @@ app.use('/api/modules', modulesRoute);
 app.use('/api/courses_enrollments', courses_enrollmentsRoute);
 app.use('/api/quizzes', quizzRoute );
 app.use('/api/questions', questionsRoute);
-app.use('/api/questionOptionsRoute', questionOptionsRoute);
+app.use('/api/question-options', questionOptionsRoute);
 app.use('./api/attempts', attemptsRoute);
-app.use('/api/attemtAnswers', attemptAnswersRoute);
+app.use('/api/attempt-answers', attemptAnswersRoute);
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
