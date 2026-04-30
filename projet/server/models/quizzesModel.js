@@ -1,4 +1,4 @@
-const db = require('../db')
+/*const db = require('../db')
 
 // GET ALL
 exports.getAll = (callback) => {
@@ -23,4 +23,40 @@ exports.update = (id, data, callback) => {
 // DELETE
 exports.delete = (id, callback) => {
   db.query('DELETE FROM Quizzes WHERE id = ?', [id], callback)
+}*/
+
+const db = require('../db')
+
+// GET ALL
+exports.getAll = (callback) => {
+  db.query('SELECT * FROM Quizzes ORDER BY created_at DESC', callback)
+}
+
+// GET ONE
+exports.getById = (id, callback) => {
+  db.query('SELECT * FROM Quizzes WHERE quiz_id = ?', [id], callback)
+}
+
+// GET QUIZZES BY MODULE
+exports.getByModuleId = (moduleId, callback) => {
+  db.query(
+    'SELECT * FROM Quizzes WHERE module_id = ? ORDER BY created_at DESC',
+    [moduleId],
+    callback
+  )
+}
+
+// CREATE
+exports.create = (data, callback) => {
+  db.query('INSERT INTO Quizzes SET ?', data, callback)
+}
+
+// UPDATE
+exports.update = (id, data, callback) => {
+  db.query('UPDATE Quizzes SET ? WHERE quiz_id = ?', [data, id], callback)
+}
+
+// DELETE
+exports.delete = (id, callback) => {
+  db.query('DELETE FROM Quizzes WHERE quiz_id = ?', [id], callback)
 }
