@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import logo from '../assets/web_project_logo.png'
+import Header from '../components/PageHeader.vue'
+import Footer from '../components/PageFooter.vue'
 
 const router = useRouter()
 
@@ -11,21 +12,7 @@ function goToLogin() {
 
 <template>
   <main class="landing-page">
-    <header class="navbar">
-      <div class="brand" @click="goToLogin">
-        <img :src="logo" alt="Platform logo" class="brand-logo" />
-        <span>MCQoodle</span>
-      </div>
-
-      <nav>
-        <a href="" @click.prevent="goToLogin">Home</a>
-        <a href="#">About the project</a>
-        <a href="#">About our team</a>
-        <a href="#">Contact</a>
-      </nav>
-
-      <button class="navbar-login-button" @click="goToLogin">Login</button>
-    </header>
+    <Header />
 
     <section class="hero">
       <div class="hero-card">
@@ -39,6 +26,8 @@ function goToLogin() {
       </div>
     </section>
   </main>
+
+  <Footer />
 </template>
 
 <style scoped>
