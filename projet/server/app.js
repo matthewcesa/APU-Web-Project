@@ -21,7 +21,7 @@ const courses_enrollmentsRoute = require('./routes/course_enrollments')
 const quizzRoute= require('./routes/quizzes');
 const questionsRoute = require('./routes/questions.js');
 const questionOptionsRoute = require('./routes/questionOptions.js');
-const attemptsRoute = require('./routes/attempts.js');
+const attemptsRoute = require('./routes/attempts')
 const attemptAnswersRoute = require('./routes/attemptAnswers.js');
 app.use('/api/courses', coursesRoute);
 app.use('/api/users', usersRoute);
@@ -30,7 +30,7 @@ app.use('/api/courses_enrollments', courses_enrollmentsRoute);
 app.use('/api/quizzes', quizzRoute );
 app.use('/api/questions', questionsRoute);
 app.use('/api/question-options', questionOptionsRoute);
-app.use('/api/attempts', attemptsRoute);
+app.use('/api/attempts', attemptsRoute)
 app.use('/api/attempt-answers', attemptAnswersRoute);
 
 app.listen(port, () => {
