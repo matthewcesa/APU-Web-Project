@@ -1,4 +1,4 @@
-const express = require('express');
+/* const express = require('express');
 const routes = express.Router();
 
 const course_enrollment = require('../controllers/course_enrollmentsController')
@@ -18,4 +18,33 @@ routes.put('/:id', course_enrollment.updatecourse_enrollment);
 // to delete a certain course_enrollment
 routes.delete('/:id', course_enrollment.deletecourse_enrollment);
 
-module.exports = routes;
+module.exports = routes; */
+
+
+const express = require('express')
+const routes = express.Router()
+
+const courseEnrollmentController = require('../controllers/course_enrollmentsController')
+
+// GET all enrollments
+routes.get('/', courseEnrollmentController.getAllEnrollments)
+
+// GET courses for one student
+routes.get('/student/:studentId', courseEnrollmentController.getEnrollmentsByStudent)
+
+// GET students for one course
+routes.get('/course/:courseId', courseEnrollmentController.getEnrollmentsByCourse)
+
+// GET one enrollment
+routes.get('/:id', courseEnrollmentController.getEnrollmentById)
+
+// CREATE enrollment
+routes.post('/', courseEnrollmentController.createEnrollment)
+
+// UPDATE enrollment
+routes.put('/:id', courseEnrollmentController.updateEnrollment)
+
+// DELETE enrollment
+routes.delete('/:id', courseEnrollmentController.deleteEnrollment)
+
+module.exports = routes
