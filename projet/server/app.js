@@ -22,7 +22,7 @@ const quizzRoute= require('./routes/quizzes');
 const questionsRoute = require('./routes/questions.js');
 const questionOptionsRoute = require('./routes/questionOptions.js');
 const attemptsRoute = require('./routes/attempts')
-const attemptAnswersRoute = require('./routes/attemptAnswers.js');
+const attemptAnswersRoute = require('./routes/attemptAnswers')
 app.use('/api/courses', coursesRoute);
 app.use('/api/users', usersRoute);
 app.use('/api/modules', modulesRoute);
