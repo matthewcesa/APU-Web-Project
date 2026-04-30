@@ -29,7 +29,7 @@ const db = require('../db')
 
 // GET ALL
 exports.getAll = (callback) => {
-  db.query('SELECT * FROM Courses', callback)
+  db.query('SELECT * FROM Courses ORDER BY created_at DESC', callback)
 }
 
 // GET ONE

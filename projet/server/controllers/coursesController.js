@@ -77,7 +77,7 @@ exports.createCourse = (req, res) => {
 
     res.status(201).json({
       message: 'Course created successfully',
-      id: results.insertId
+      course_id: results.insertId
     })
   })
 }
