@@ -6,6 +6,8 @@ import HomePage_Student from '../views/HomePage_Student.vue'
 import HomePage_Teacher from '../views/HomePage_Teacher.vue'
 import HomePage_Admin from '../views/HomePage_Admin.vue'
 import CoursePage from '../views/CoursePage.vue'
+import QuizPage from '../views/QuizPage.vue'
+
 function getCurrentUser() {
   const user = localStorage.getItem('user')
   return user ? JSON.parse(user) : null
@@ -46,6 +48,12 @@ const router = createRouter({
   path: '/courses/:id',
   name: 'course-detail',
   component: CoursePage,
+  meta: { requiresAuth: true, role: 'student' },
+  },
+  {
+  path: '/quizzes/:id',
+  name: 'quiz-detail',
+  component: QuizPage,
   meta: { requiresAuth: true, role: 'student' },
   }
   ]
