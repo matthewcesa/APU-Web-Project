@@ -208,7 +208,7 @@ async function createQuizzes(htmlCssModuleId, javascriptModuleId, sqlModuleId, t
     {
       title: 'JavaScript Basics Quiz',
       description: 'Check your understanding of variables and functions.',
-      type: 'practice',
+      type: 'exam',
       mode: 'standard',
       is_published: true,
       time_limit_minutes: 20,

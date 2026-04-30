@@ -66,10 +66,27 @@ async function fetchCourseData() {
         throw new Error(quizData.message || quizData.error || 'Failed to load quizzes')
       }
 
-      return quizData.map((quiz) => ({
-        ...quiz,
-        module_title: module.title,
-      }))
+      const quizzesWithAttempts = await Promise.all(
+        quizData.map(async (quiz) => {
+          const attemptsResponse = await fetch(
+            `http://localhost:3000/api/attempts/student/${user.value.user_id}/quiz/${quiz.quiz_id}`,
+          )
+
+          const attemptsData = await attemptsResponse.json()
+
+          if (!attemptsResponse.ok) {
+            throw new Error(attemptsData.message || attemptsData.error || 'Failed to load attempts')
+          }
+
+          return {
+            ...quiz,
+            module_title: module.title,
+            last_attempt: attemptsData.length > 0 ? attemptsData[0] : null,
+          }
+        }),
+      )
+
+      return quizzesWithAttempts
     })
 
     const quizzesByModule = await Promise.all(quizRequests)
@@ -133,7 +150,14 @@ function openQuiz(quizId) {
                 <small>Module: {{ quiz.module_title }}</small>
               </div>
 
-              <button @click="openQuiz(quiz.quiz_id)">Open MCQ</button>
+              <button
+                v-if="quiz.type !== 'exam' || !quiz.last_attempt"
+                @click="openQuiz(quiz.quiz_id)"
+              >
+                Open MCQ
+              </button>
+
+              <div v-else class="score-badge">Score: {{ quiz.last_attempt.score }}</div>
             </li>
           </ul>
         </section>
@@ -145,6 +169,16 @@ function openQuiz(quizId) {
 </template>
 
 <style scoped>
+.score-badge {
+  min-width: 120px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  border-radius: 10px;
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 900;
+}
+
 .course-page {
   min-height: 100vh;
   background: #ffffff;

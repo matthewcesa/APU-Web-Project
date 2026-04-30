@@ -22,6 +22,16 @@ const score = ref(0)
 const total = ref(0)
 const lastAttemptId = ref(null)
 
+const examAlreadySubmitted = ref(false)
+
+function isExam() {
+  return quiz.value?.type === 'exam'
+}
+
+function isPractice() {
+  return quiz.value?.type === 'practice'
+}
+
 onMounted(async () => {
   if (!user.value || user.value.role !== 'student') {
     router.push('/login')
@@ -129,6 +139,11 @@ async function loadLastAttempt() {
   total.value = getTotalPoints()
   submitted.value = true
 
+  if (isExam()) {
+    examAlreadySubmitted.value = true
+    return
+  }
+
   const answersResponse = await fetch(
     `http://localhost:3000/api/attempt-answers/attempt/${lastAttempt.attempt_id}`,
   )
@@ -184,6 +199,21 @@ function getQuestionScore(question) {
 // Calculates the final score, saves the attempt, and saves the selected answers.
 async function submitQuiz() {
   error.value = ''
+
+  if (isExam()) {
+    const confirmed = confirm(
+      'Are you sure you want to submit this exam? You will not be able to try it again.',
+    )
+
+    if (!confirmed) {
+      return
+    }
+  }
+
+  if (isExam() && lastAttemptId.value) {
+    error.value = 'You have already submitted this exam.'
+    return
+  }
 
   score.value = questions.value.reduce((sum, question) => {
     return sum + getQuestionScore(question)
@@ -297,7 +327,7 @@ function goBack() {
           </div>
         </section>
 
-        <section class="questions">
+        <section v-if="!examAlreadySubmitted" class="questions">
           <h2>Questions</h2>
 
           <form @submit.prevent="submitQuiz">
@@ -355,10 +385,16 @@ function goBack() {
           </form>
 
           <div v-if="submitted" class="result-box">
-            <h2>Saved result</h2>
+            <h2>{{ isExam() ? 'Exam submitted' : 'Saved result' }}</h2>
             <p>{{ score }} / {{ total }}</p>
 
-            <button type="button" class="restart-button" @click="restartQuiz">Restart MCQ</button>
+            <p v-if="isExam()" class="exam-message">
+              Your exam has been submitted. You cannot review or retake it.
+            </p>
+
+            <button v-if="isPractice()" type="button" class="restart-button" @click="restartQuiz">
+              Restart MCQ
+            </button>
           </div>
         </section>
       </template>
@@ -369,6 +405,12 @@ function goBack() {
 </template>
 
 <style scoped>
+.exam-message {
+  margin: 0.8rem 0 0;
+  color: #747789;
+  font-size: 0.95rem;
+}
+
 .quiz-page {
   min-height: 100vh;
   background: #ffffff;
