@@ -5,7 +5,7 @@ import LoginPage from '../views/LoginPage.vue'
 import HomePage_Student from '../views/HomePage_Student.vue'
 import HomePage_Teacher from '../views/HomePage_Teacher.vue'
 import HomePage_Admin from '../views/HomePage_Admin.vue'
-
+import CoursePage from '../views/CoursePage.vue'
 function getCurrentUser() {
   const user = localStorage.getItem('user')
   return user ? JSON.parse(user) : null
@@ -41,7 +41,13 @@ const router = createRouter({
       name: 'admin',
       component: HomePage_Admin,
       meta: { requiresAuth: true, role: 'admin' }
-    }
+    },
+    {
+  path: '/courses/:id',
+  name: 'course-detail',
+  component: CoursePage,
+  meta: { requiresAuth: true, role: 'student' },
+  }
   ]
 })
 
