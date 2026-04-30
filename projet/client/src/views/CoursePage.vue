@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import AppHeader from '../components/PageHeader.vue'
-import AppFooter from '../components/PageFooter.vue'
+import Header from '../components/PageHeader.vue'
+import Footer from '../components/PageFooter.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -92,7 +92,7 @@ function openQuiz(quizId) {
 
 <template>
   <div class="course-page">
-    <AppHeader :user="user" />
+    <Header :user="user" />
 
     <main class="content">
       <button class="back-button" @click="goBack">← Back to courses</button>
@@ -140,7 +140,7 @@ function openQuiz(quizId) {
       </template>
     </main>
 
-    <AppFooter />
+    <Footer />
   </div>
 </template>
 
