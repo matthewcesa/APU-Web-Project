@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
 const coursesRoute = require('./routes/courses');
 const usersRoute = require('./routes/users');
 const modulesRoute = require('./routes/modules.js')
-const courses_enrollmentsRoute = require('./routes/course_enrollments')
+const courseEnrollmentsRoute = require('./routes/course_enrollments')
 const quizzRoute= require('./routes/quizzes');
 const questionsRoute = require('./routes/questions.js');
 const questionOptionsRoute = require('./routes/questionOptions.js');
@@ -26,7 +26,7 @@ const attemptAnswersRoute = require('./routes/attemptAnswers')
 app.use('/api/courses', coursesRoute);
 app.use('/api/users', usersRoute);
 app.use('/api/modules', modulesRoute);
-app.use('/api/courses_enrollments', courses_enrollmentsRoute);
+app.use('/api/course-enrollments', courseEnrollmentsRoute)
 app.use('/api/quizzes', quizzRoute );
 app.use('/api/questions', questionsRoute);
 app.use('/api/question-options', questionOptionsRoute);
@@ -36,3 +36,5 @@ app.use('/api/attempt-answers', attemptAnswersRoute);
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
+
+
