@@ -23,7 +23,7 @@ onMounted(async () => {
     return
   }
 
-  if (user.value.role !== 'student') {
+  if (user.value.role !== 'student' && user.value.role !== 'teacher') {
     router.push('/login')
     return
   }
@@ -99,7 +99,11 @@ async function fetchCourseData() {
 }
 
 function goBack() {
-  router.push('/student')
+  if (user.value?.role === 'teacher') {
+    router.push('/teacher')
+  } else {
+    router.push('/student')
+  }
 }
 
 function openQuiz(quizId) {
