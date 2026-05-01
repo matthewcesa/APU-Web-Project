@@ -140,3 +140,61 @@ exports.deleteEnrollment = (req, res) => {
     res.json({ message: 'Enrollment deleted successfully' })
   })
 }
+
+// JOIN COURSE WITH CODE
+exports.joinCourseWithCode = (req, res) => {
+  const { student_id, join_code } = req.body
+
+  if (!student_id || !join_code) {
+    return res.status(400).json({
+      message: 'Student ID and course code are required',
+    })
+  }
+
+  const cleanCode = join_code.trim().toUpperCase()
+
+  CourseEnrollment.getCourseByJoinCode(cleanCode, (err, courses) => {
+    if (err) {
+      return res.status(500).json({ error: err.message })
+    }
+
+    if (courses.length === 0) {
+      return res.status(404).json({
+        message: 'No course found with this code',
+      })
+    }
+
+    const course = courses[0]
+
+    CourseEnrollment.getByStudentAndCourse(student_id, course.course_id, (err, enrollments) => {
+      if (err) {
+        return res.status(500).json({ error: err.message })
+      }
+
+      if (enrollments.length > 0) {
+        return res.status(409).json({
+          message: 'You are already enrolled in this course',
+        })
+      }
+
+      CourseEnrollment.create(
+        {
+          student_id,
+          course_id: course.course_id,
+          status: 'active',
+        },
+        (err, results) => {
+          if (err) {
+            return res.status(500).json({ error: err.message })
+          }
+
+          res.status(201).json({
+            message: 'Course joined successfully',
+            course_enrollment_id: results.insertId,
+            course_id: course.course_id,
+          })
+        },
+      )
+    })
+  })
+}
