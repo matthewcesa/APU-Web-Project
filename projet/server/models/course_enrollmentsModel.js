@@ -81,3 +81,17 @@ exports.delete = (id, callback) => {
     callback
   )
 }
+
+// GET course by join code
+exports.getCourseByJoinCode = (joinCode, callback) => {
+  db.query('SELECT * FROM Courses WHERE join_code = ?', [joinCode], callback)
+}
+
+// CHECK if student is already enrolled
+exports.getByStudentAndCourse = (studentId, courseId, callback) => {
+  db.query(
+    'SELECT * FROM CourseEnrollments WHERE student_id = ? AND course_id = ?',
+    [studentId, courseId],
+    callback
+  )
+}

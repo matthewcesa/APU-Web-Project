@@ -9,9 +9,13 @@ const router = useRouter()
 const user = ref(null)
 const courses = ref([])
 const loading = ref(true)
+
 const error = ref('')
-var count = 0
-function getCourseColor() {
+
+const joinCode = ref('')
+const joinLoading = ref(false)
+
+function getRandomCourseColor() {
   const colors = [
     '#0022ff',
     '#00ffae',
@@ -24,9 +28,8 @@ function getCourseColor() {
     '#ff00c8',
     '#f6ff00',
   ]
-  count += 1
-  if (count > colors.length) count = 0
-  return colors[count]
+
+  return colors[Math.floor(Math.random() * colors.length)]
 }
 
 onMounted(async () => {
@@ -71,11 +74,53 @@ async function fetchStudentCourses() {
       return JSON.parse(text)
     })
 
-    courses.value = await Promise.all(courseRequests)
+    const loadedCourses = await Promise.all(courseRequests)
+    courses.value = loadedCourses.map((course) => ({
+      ...course,
+      cardColor: getRandomCourseColor(),
+    }))
   } catch (err) {
     error.value = err.message
   } finally {
     loading.value = false
+  }
+}
+
+async function joinCourse() {
+  if (!joinCode.value.trim()) {
+    alert('Please enter a course code.')
+    return
+  }
+
+  joinLoading.value = true
+
+  try {
+    const response = await fetch('http://localhost:3000/api/course-enrollments/join', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        student_id: user.value.user_id,
+        join_code: joinCode.value,
+      }),
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      alert(data.message || data.error || 'Failed to join course')
+      return
+    }
+
+    alert('Course joined successfully.')
+
+    joinCode.value = ''
+    await fetchStudentCourses()
+  } catch (err) {
+    alert(err.message || 'Something went wrong.')
+  } finally {
+    joinLoading.value = false
   }
 }
 
@@ -97,6 +142,21 @@ function goToCourse(courseId) {
         </div>
       </section>
 
+      <section class="join-course-box">
+        <div>
+          <h2>Join a course</h2>
+          <p>Enter the code of the course.</p>
+        </div>
+
+        <form @submit.prevent="joinCourse" class="join-form">
+          <input v-model="joinCode" type="text" placeholder="Example: WEB101" />
+
+          <button type="submit" :disabled="joinLoading">
+            {{ joinLoading ? 'Joining...' : 'Join course' }}
+          </button>
+        </form>
+      </section>
+
       <p v-if="loading" class="info-message">Loading your courses...</p>
 
       <p v-else-if="error" class="error-message">
@@ -115,7 +175,7 @@ function goToCourse(courseId) {
           class="course-card"
           @click="goToCourse(course.course_id)"
         >
-          <div class="course-cover" :style="{ background: getCourseColor(course.course_id) }">
+          <div class="course-cover" :style="{ background: course.cardColor }">
             <span class="course-status">
               {{ course.is_published ? 'Published' : 'Draft' }}
             </span>
@@ -430,6 +490,79 @@ nav a:hover {
   .course-meta {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+.join-course-box {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(5, 12, 27, 0.05);
+}
+
+.join-course-box h2 {
+  margin: 0 0 0.4rem;
+  color: #05051f;
+  font-size: 1.3rem;
+}
+
+.join-course-box p {
+  margin: 0;
+  color: #747789;
+}
+
+.join-form {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.join-form input {
+  min-width: 220px;
+  padding: 0.85rem;
+  border: 1px solid #d1d1d1;
+  border-radius: 12px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.join-form input:focus {
+  border-color: #05051f;
+}
+
+.join-form button {
+  padding: 0.85rem 1.2rem;
+  border: none;
+  border-radius: 12px;
+  background: #05051f;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.join-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .join-course-box {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .join-form {
+    flex-direction: column;
+  }
+
+  .join-form input,
+  .join-form button {
+    width: 100%;
   }
 }
 </style>

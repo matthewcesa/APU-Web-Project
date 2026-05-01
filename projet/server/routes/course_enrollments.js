@@ -47,4 +47,7 @@ routes.put('/:id', courseEnrollmentController.updateEnrollment)
 // DELETE enrollment
 routes.delete('/:id', courseEnrollmentController.deleteEnrollment)
 
+// Student JOIN course with code
+routes.post('/join', courseEnrollmentController.joinCourseWithCode)
+
 module.exports = routes
