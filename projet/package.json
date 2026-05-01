@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "client": "cd client && npm run serve",
+    "client": "cd client && npm run dev",
     "server": "cd server && node app.js",
     "dev": "concurrently --kill-others \"npm run server\" \"npm run client\""
   },

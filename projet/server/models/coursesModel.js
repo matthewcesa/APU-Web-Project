@@ -37,6 +37,11 @@ exports.getById = (id, callback) => {
   db.query('SELECT * FROM Courses WHERE course_id = ?', [id], callback)
 }
 
+// GET course by teacher id
+exports.getByTeacherId = (teacherId, callback) => {
+  db.query('SELECT * FROM Courses WHERE teacher_id = ? ', [teacherId], callback)
+}
+
 // CREATE
 exports.create = (data, callback) => {
   db.query('INSERT INTO Courses SET ?', data, callback)

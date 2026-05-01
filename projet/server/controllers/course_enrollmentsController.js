@@ -79,6 +79,7 @@ exports.getEnrollmentsByStudent = (req, res) => {
   })
 }
 
+
 // GET students by course
 exports.getEnrollmentsByCourse = (req, res) => {
   CourseEnrollment.getByCourseId(req.params.courseId, (err, results) => {

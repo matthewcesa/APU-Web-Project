@@ -68,6 +68,17 @@ exports.getCourseById = (req, res) => {
   })
 }
 
+
+// GET course by teacher id
+exports.getCoursesByTeacher = (req,res) => {
+  Course.getByTeacherId(req.params.teacherId, (err, results) => {
+    if (err) {
+      return res.status(500).json({error:err.message})
+    }
+    res.json(results)
+  })
+}
+
 // CREATE COURSE
 exports.createCourse = (req, res) => {
   Course.create(req.body, (err, results) => {
