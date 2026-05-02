@@ -6,7 +6,6 @@ const courseController = require('../controllers/coursesController')
 // GET ALL course
 router.get('/', courseController.getAllCourses)
 
-
 // GET courses for one teacher
 router.get('/teacher/:teacherId',courseController.getCoursesByTeacher)
 

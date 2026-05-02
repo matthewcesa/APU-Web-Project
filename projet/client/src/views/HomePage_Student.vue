@@ -42,10 +42,6 @@ onMounted(async () => {
 
   user.value = JSON.parse(storedUser)
 
-  if (user.value.role !== 'student') {
-    router.push('/login')
-    return
-  }
 
   await fetchStudentCourses()
 })

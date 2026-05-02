@@ -11,7 +11,6 @@ const courses = ref([])
 const loading = ref(true)
 const error = ref('')
 const success = ref('')
-const coursesLoading = ref(false)
 
 const showCreateForm = ref(false)
 
@@ -52,15 +51,19 @@ onMounted(async () => {
     router.push('/login')
     return
   }
-
-  user.value = JSON.parse(storedUser)
-
-  if (user.value.role !== 'teacher') {
-    router.push('/login')
-    return
+  
+  let userData = JSON.parse(storedUser)
+  if (typeof userData === 'string') {
+    userData = JSON.parse(userData)
   }
 
-  await fetchteacherCourses()
+  user.value = userData
+
+  if (user.value && user.value.user_id) {
+    await fetchteacherCourses()
+  } else {
+    router.push('/login')
+  }
 })
 
 async function fetchteacherCourses() {
@@ -80,9 +83,7 @@ async function fetchteacherCourses() {
     }
   }
 
-function goToCourse(courseId) {
-  router.push(`/courses/${courseId}`)
-}
+
 
 function toggleForm() {
   showCreateForm.value = !showCreateForm.value
@@ -98,12 +99,23 @@ function resetForm() {
     short_description:'',
   }
 }
+function goToCourse(courseId) {
+  router.push(`/courses/${courseId}`)
 
+}
 async function createCourse(){
   error.value = ''
   success.value = ''
   loading.value = true
   try{
+    if (!form.value.title.trim()) {
+      throw new Error('Course title is required.')
+    }
+
+    const titlePrefix = form.value.title.slice(0, 3).toUpperCase().padEnd(3, 'X')
+    const randomNumbers = Math.floor(Math.random() * 900) + 100
+    const generatedJoinCode = titlePrefix + randomNumbers
+
     const response = await fetch('http://localhost:3000/api/courses', {
       method: 'POST',
       headers: {
@@ -112,6 +124,7 @@ async function createCourse(){
       
       body: JSON.stringify({
         ...form.value,
+        join_code: generatedJoinCode,
         teacher_id: user.value.user_id,
       }),
       
