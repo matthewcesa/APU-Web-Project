@@ -670,4 +670,315 @@ onUnmounted(stopTimer)
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
 }
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .content {
+    padding: 32px 16px;
+    max-width: 100%;
+  }
+
+  .settings-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .teacher-controls {
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .question-box {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .result-box {
+    padding: 32px 20px;
+  }
+
+  .big-score {
+    font-size: 2.5rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .content {
+    max-width: 100%;
+    padding: 20px 12px;
+  }
+
+  .back-button {
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+  }
+
+  .teacher-controls {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .quiz-settings-panel h3 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .setting-item input {
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  .btn-save-settings {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .add-btn {
+    margin-top: 12px;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .timer-bar {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    margin: 0 auto 20px;
+  }
+
+  .question-box {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .question-header h3 {
+    font-size: 0.85rem;
+  }
+
+  .btn-small-edit {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .question-text {
+    font-size: 1rem;
+    margin: 12px 0 16px;
+  }
+
+  .options-list {
+    gap: 8px;
+  }
+
+  .option {
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+
+  .option input {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+  }
+
+  .form-card {
+    padding: 12px;
+    margin-top: 12px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  .edit-opt-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .edit-opt-row input {
+    flex: 1;
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+
+  .btn-remove {
+    padding: 4px 8px;
+    font-size: 1rem;
+  }
+
+  .btn-add-opt,
+  .save-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.9rem;
+    margin-top: 8px;
+  }
+
+  .result-box {
+    padding: 24px 16px;
+    margin-top: 20px;
+    border-radius: 16px;
+  }
+
+  .big-score {
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+
+  .result-box p {
+    font-size: 0.95rem;
+  }
+
+  .submit-button {
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  .restart-button {
+    padding: 12px 20px;
+    margin-top: 12px;
+    font-size: 0.95rem;
+  }
+
+  .separator {
+    margin: 16px 0;
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .edit-actions button {
+    flex: 1;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .edit-input-text {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.95rem;
+  }
+
+  .edit-mode-active {
+    background: #f0fdf4;
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 8px;
+  }
+
+  .back-button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+
+  .teacher-controls {
+    padding: 8px;
+    margin-bottom: 16px;
+  }
+
+  .quiz-settings-panel h3 {
+    font-size: 0.95rem;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .setting-item input {
+    padding: 6px;
+    font-size: 16px;
+  }
+
+  .btn-save-settings {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .add-btn {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .question-box {
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+  .question-text {
+    font-size: 0.95rem;
+    margin: 8px 0 12px;
+  }
+
+  .option {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .option input {
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+  }
+
+  .result-box {
+    padding: 20px 12px;
+  }
+
+  .big-score {
+    font-size: 1.75rem;
+  }
+
+  .submit-button {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+
+  .edit-opt-row {
+    flex-direction: column;
+  }
+
+  .edit-opt-row input:first-child {
+    width: auto;
+  }
+}
 </style>

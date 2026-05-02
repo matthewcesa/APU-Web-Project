@@ -640,4 +640,240 @@ async function deleteQuiz(quizId) {
   min-width: 100px;
   text-align: center;
 }
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .content {
+    padding: 32px 16px;
+  }
+
+  .course-info {
+    padding: 32px;
+  }
+
+  .course-info h1 {
+    font-size: 2rem;
+  }
+
+  .course-info p {
+    font-size: 1rem;
+  }
+
+  .course-details {
+    flex-wrap: wrap;
+  }
+
+  .teacher-course-panel {
+    margin-top: 32px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .quiz-list {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .content {
+    padding: 24px 12px;
+    max-width: 100%;
+  }
+
+  .back-button {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+
+  .course-info {
+    padding: 20px;
+    margin-bottom: 32px;
+    border-radius: 20px;
+  }
+
+  .course-info::before {
+    height: 4px;
+  }
+
+  .course-info h1 {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+  }
+
+  .course-info p {
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+  }
+
+  .course-details {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .course-details span {
+    font-size: 0.8rem;
+    padding: 4px 12px;
+  }
+
+  .teacher-course-panel {
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+  .admin-card {
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 16px;
+  }
+
+  .admin-card h3 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+  }
+
+  .form-group input, 
+  .form-group textarea, 
+  .form-group select {
+    padding: 10px 12px;
+    font-size: 16px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .input-with-unit {
+    display: flex;
+    align-items: center;
+  }
+
+  .input-with-unit input {
+    flex: 1;
+  }
+
+  .primary-button {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .quiz-section h2 {
+    font-size: 1.35rem;
+    margin-bottom: 16px;
+  }
+
+  .quiz-list {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .quiz-item {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .quiz-item h3 {
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+  }
+
+  .quiz-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .quiz-actions button {
+    flex: 1;
+    min-width: 100px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .delete-button {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .empty-box {
+    padding: 40px 20px;
+    font-size: 0.9rem;
+  }
+
+  .help-text {
+    font-size: 0.85rem;
+  }
+
+  .module-creation,
+  .quiz-creation {
+    margin-bottom: 16px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 8px;
+  }
+
+  .course-info {
+    padding: 16px;
+  }
+
+  .course-info h1 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+
+  .course-info p {
+    font-size: 0.9rem;
+  }
+
+  .back-button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  .admin-card h3 {
+    font-size: 0.95rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    padding: 8px 10px;
+    font-size: 16px;
+  }
+
+  .quiz-item {
+    padding: 12px;
+  }
+
+  .quiz-item h3 {
+    font-size: 1rem;
+  }
+
+  .quiz-actions {
+    flex-direction: column;
+  }
+
+  .quiz-actions button,
+  .quiz-actions span {
+    width: 100%;
+  }
+}
 </style>

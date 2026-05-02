@@ -1,0 +1,251 @@
+/* Global Responsive Design Styles */
+
+/* Ensure viewport meta tag is set in index.html for proper mobile rendering */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* Responsive Images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Responsive Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Touch-friendly buttons on mobile */
+button, a {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Responsive Typography - Mobile First */
+@media (max-width: 480px) {
+  html {
+    font-size: 15px;
+  }
+
+  body {
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  h4, h5, h6 {
+    font-size: 1rem;
+  }
+}
+
+/* Tablet (480px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  html {
+    font-size: 15.5px;
+  }
+}
+
+/* Desktop (768px+) */
+@media (min-width: 769px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+/* Prevent horizontal scroll on smaller screens */
+@media (max-width: 480px) {
+  body, html {
+    overflow-x: hidden;
+    width: 100vw;
+  }
+}
+
+/* Flexbox Container Utilities */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Grid Container Utilities */
+.responsive-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+@media (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Container max-width utility */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+}
+
+/* Responsive spacing utilities */
+.p-responsive {
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .p-responsive {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .p-responsive {
+    padding: 1rem;
+  }
+}
+
+/* Responsive margin utilities */
+.m-responsive {
+  margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .m-responsive {
+    margin: 1.5rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .m-responsive {
+    margin: 1rem 0;
+  }
+}
+
+/* Responsive gap utilities */
+.gap-responsive {
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .gap-responsive {
+    gap: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .gap-responsive {
+    gap: 0.75rem;
+  }
+}
+
+/* Responsive font size utilities */
+.text-responsive {
+  font-size: 1.125rem;
+}
+
+@media (max-width: 768px) {
+  .text-responsive {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .text-responsive {
+    font-size: 0.95rem;
+  }
+}
+
+/* Hide/Show utilities for responsive layouts */
+.hide-mobile {
+  display: block;
+}
+
+.show-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hide-tablet {
+    display: none;
+  }
+
+  .show-tablet {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .hide-mobile {
+    display: none;
+  }
+
+  .show-mobile {
+    display: block;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    font-size: 12pt;
+  }
+
+  a {
+    color: inherit;
+  }
+}

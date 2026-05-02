@@ -449,5 +449,269 @@ async function deleteCourse(courseId, event) {
   .create-course { flex-direction: column; text-align: center; }
 }
 
+@media (max-width: 1024px) {
+  .content {
+    padding: 40px 16px;
+  }
+
+  .page-intro {
+    margin-bottom: 32px;
+    padding-left: 16px;
+  }
+
+  .page-intro h1 {
+    font-size: 2rem;
+  }
+
+  .courses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .course-cover {
+    height: 140px;
+  }
+
+  .create-course {
+    padding: 32px;
+    margin-top: 40px;
+  }
+
+  .form-section {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 30px 12px;
+  }
+
+  .page-intro {
+    margin-bottom: 24px;
+    border-left: 3px solid #6366f1;
+    padding-left: 12px;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+  }
+
+  .page-intro h1 {
+    font-size: 1.75rem;
+  }
+
+  .page-intro p {
+    font-size: 0.95rem;
+  }
+
+  .courses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+  }
+
+  .course-card {
+    border-radius: 16px;
+  }
+
+  .course-cover {
+    height: 120px;
+  }
+
+  .course-status {
+    top: 10px;
+    right: 10px;
+    padding: 3px 10px;
+    font-size: 0.65rem;
+  }
+
+  .course-content {
+    padding: 16px;
+  }
+
+  .course-content h2 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+
+  .course-description {
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+  }
+
+  .course-meta {
+    font-size: 0.8rem;
+    padding-top: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .delete-course-btn {
+    margin-top: auto;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .create-course {
+    flex-direction: column;
+    text-align: center;
+    padding: 24px 16px;
+    margin-top: 30px;
+  }
+
+  .create-course > div {
+    margin-bottom: 12px;
+  }
+
+  .create-course > div p {
+    font-size: 0.95rem;
+    margin: 0;
+  }
+
+  .primary-button {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
+
+  .form-section {
+    margin-top: 20px;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .form-section h2 {
+    font-size: 1.35rem;
+    margin-bottom: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+  }
+
+  .form-group input {
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .info-message,
+  .error-message,
+  .empty-state {
+    padding: 1rem 0.8rem;
+    font-size: 0.95rem;
+    border-radius: 12px;
+  }
+
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+
+  .empty-state h2 {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 20px 8px;
+  }
+
+  .page-intro {
+    margin-bottom: 16px;
+    border-left: 2px solid #6366f1;
+    padding-left: 10px;
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+  }
+
+  .page-intro h1 {
+    font-size: 1.5rem;
+    margin: 6px 0;
+  }
+
+  .page-intro p {
+    font-size: 0.9rem;
+  }
+
+  .courses-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .course-card {
+    border-radius: 12px;
+  }
+
+  .course-cover {
+    height: 100px;
+  }
+
+  .course-content {
+    padding: 12px;
+  }
+
+  .course-content h2 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .course-description {
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  .course-meta {
+    font-size: 0.75rem;
+    padding-top: 8px;
+    gap: 4px;
+  }
+
+  .delete-course-btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .create-course {
+    padding: 16px 12px;
+    margin-top: 20px;
+  }
+
+  .create-course > div p {
+    font-size: 0.9rem;
+  }
+
+  .primary-button {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .form-section {
+    padding: 12px;
+  }
+
+  .form-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+  }
+
+  .form-group input {
+    padding: 8px;
+    font-size: 16px;
+  }
+}
+
 
 </style>

@@ -528,4 +528,250 @@ select:focus {
     justify-content: flex-start;
   }
 }
+
+@media (max-width: 1024px) {
+  .content {
+    padding: 3rem 2rem;
+    max-width: 100%;
+  }
+
+  .admin-header h1 {
+    font-size: 2rem;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .form-section,
+  .users-section {
+    padding: 1.5rem;
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .user-row {
+    padding: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 2rem 1rem;
+    max-width: 100%;
+  }
+
+  .admin-header {
+    margin-bottom: 1.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .admin-header p {
+    font-size: 0.95rem;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-box {
+    padding: 1rem;
+  }
+
+  .stat-box strong {
+    font-size: 1.4rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .stat-box span {
+    font-size: 0.85rem;
+  }
+
+  .form-section,
+  .users-section {
+    margin-top: 1.5rem;
+    padding: 1.2rem;
+    border-radius: 14px;
+  }
+
+  .form-section h2,
+  .users-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+  }
+
+  input,
+  select {
+    padding: 0.7rem;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    margin-top: 1rem;
+    gap: 0.8rem;
+  }
+
+  .primary-button,
+  .secondary-button {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .section-title {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+  }
+
+  .section-title p {
+    font-size: 0.9rem;
+  }
+
+  .user-row {
+    padding: 0.8rem;
+    margin-bottom: 0.6rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+
+  .user-row h3 {
+    font-size: 0.95rem;
+  }
+
+  .user-row p {
+    font-size: 0.85rem;
+  }
+
+  .badges {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0.4rem;
+  }
+
+  .role-badge,
+  .status-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .success-message,
+  .error-message,
+  .info-message {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .admin-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .admin-header p {
+    font-size: 0.9rem;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .stat-box {
+    padding: 0.9rem;
+  }
+
+  .stat-box strong {
+    font-size: 1.2rem;
+  }
+
+  .stat-box span {
+    font-size: 0.8rem;
+  }
+
+  .form-section,
+  .users-section {
+    padding: 0.9rem;
+    margin-top: 1rem;
+    border-radius: 12px;
+  }
+
+  .form-section h2,
+  .users-section h2 {
+    font-size: 1.2rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+  }
+
+  input,
+  select {
+    padding: 0.6rem;
+    font-size: 16px;
+  }
+
+  .primary-button,
+  .secondary-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .user-row {
+    padding: 0.6rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .user-row h3 {
+    font-size: 0.9rem;
+  }
+
+  .user-row p {
+    font-size: 0.8rem;
+  }
+
+  .role-badge,
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .success-message,
+  .error-message,
+  .info-message {
+    padding: 0.6rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+}
 </style>
