@@ -1,6 +1,5 @@
-
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AppHeader from '../components/PageHeader.vue'
 import AppFooter from '../components/PageFooter.vue'
@@ -14,6 +13,7 @@ const user = ref(storedUser ? JSON.parse(storedUser) : null)
 const quiz = ref(null)
 const questions = ref([])
 const answers = ref({})
+
 
 const loading = ref(true)
 const error = ref('')
@@ -29,9 +29,12 @@ function isCorrect(value) {
   return value === true || value === 1 || value === 'true'
 }
 const isMultipleChoice = (question) => {
-  // Elle renvoie true si le type est multiple_choice
+
   return question.question_type === 'multiple_choice';
 };
+
+const editingQuestionId = ref(null); 
+const editForm = ref(null); 
 
 function isExam() {  return quiz.value?.type === 'exam'}
 function isPractice() {  return quiz.value?.type === 'practice' || !isExam()}
@@ -40,7 +43,7 @@ const isEditing = ref(false);
 const newQuestion = ref({
   question_text: '',
   points: 1,
-  question_type: 'single_choice', // Valeur par défaut
+  question_type: 'single_choice', 
   options: [
     { option_text: '', is_correct: false },
     { option_text: '', is_correct: false },
@@ -49,18 +52,48 @@ const newQuestion = ref({
   ]
 });
 
-// Fonction utilitaire pour ajouter une option dans le formulaire
+
 function addOptionField() {
   newQuestion.value.options.push({ option_text: '', is_correct: false });
 }
 
-// Fonction utilitaire pour supprimer une option dans le formulaire
+
 function removeOptionField(index) {
   if (newQuestion.value.options.length > 2) {
     newQuestion.value.options.splice(index, 1);
   }
 }
 
+watch(
+  () => editForm.value?.options,
+  (newOptions) => {
+    if (!newOptions) return;
+
+    const correctCount = newOptions.filter(opt => isCorrect(opt.is_correct)).length;
+
+  
+    if (correctCount > 1) {
+      editForm.value.question_type = 'multiple_choice';
+    } 
+
+    else if (correctCount === 1) {
+      editForm.value.question_type = 'single_choice';
+    }
+  },
+  { deep: true } 
+);
+watch(
+  () => newQuestion.value.options,
+  (newOptions) => {
+    const correctCount = newOptions.filter(opt => opt.is_correct).length;
+    if (correctCount > 1) {
+      newQuestion.value.question_type = 'multiple_choice';
+    } else if (correctCount === 1) {
+      newQuestion.value.question_type = 'single_choice';
+    }
+  },
+  { deep: true }
+);
 async function loadQuiz() {
 
   console.log("Démarrage du chargement du quiz...");
@@ -73,7 +106,7 @@ async function loadQuiz() {
     console.log('user.value:', user.value)
     console.log('quizId:', quizId)
 
-    // 1. Charger les métadonnées du Quiz
+
     const quizResponse = await fetch(`http://localhost:3000/api/quizzes/${quizId}`);
     if (!quizResponse.ok) throw new Error('Impossible de charger les détails du quiz');
     const quizData = await quizResponse.json();
@@ -81,19 +114,19 @@ async function loadQuiz() {
     quiz.value = quizData;
 
 
-    // 2. Charger les Questions du Quiz
+
     const questionsResponse = await fetch(`http://localhost:3000/api/questions/quiz/${quizId}`);
     if (!questionsResponse.ok) throw new Error('Impossible de charger les questions');
     const questionsData = await questionsResponse.json();
     console.log('questionsData:', questionsData)
 
-    // 3. Charger les Options pour chaque question
+
     const loadedQuestions = [];
     for (const question of questionsData) {
       const optsRes = await fetch(`http://localhost:3000/api/question-options/question/${question.question_id}`);
       const optsData = await optsRes.json();
       console.log('options for question', question.question_id, ':', optsData)
-      // On attache les options à la question
+
       loadedQuestions.push({ 
         ...question, 
         options: optsData 
@@ -102,13 +135,12 @@ async function loadQuiz() {
 
     questions.value = loadedQuestions;
     
-    // Initialiser les réponses vides
+
     if (typeof resetAnswers === 'function') {
       resetAnswers();
     }
 
-    // 4. GESTION DU RÔLE : Charger les scores seulement si c'est un étudiant
-    // C'est ici que ça bloquait pour le Teacher auparavant
+
     if (user.value && user.value.role === 'student') {
       console.log("Rôle étudiant détecté : chargement des tentatives...");
       if (typeof loadLastAttempt === 'function') {
@@ -126,7 +158,7 @@ async function loadQuiz() {
   }
 }
 
-// Creates an empty answer structure depending on the question type.
+
 function resetAnswers() {
   const emptyAnswers = {}
 
@@ -137,7 +169,7 @@ function resetAnswers() {
   answers.value = emptyAnswers
 }
 
-// Reloads the student's last attempt and restores their saved answers.
+
 async function loadLastAttempt() {
   const quizId = route.params.id
 
@@ -201,7 +233,7 @@ function getTotalPoints() {
   }, 0)
 }
 
-// Calculates the points earned for one question.
+
 function getQuestionScore(question) {
   const points = Number(question.points || 1)
   const selectedAnswer = answers.value[question.question_id]
@@ -224,7 +256,7 @@ function getQuestionScore(question) {
 
 async function saveQuestion() {
   try {
-    // 1. Création de la question
+
     const qRes = await fetch('http://localhost:3000/api/questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -232,34 +264,32 @@ async function saveQuestion() {
         quiz_id: route.params.id,
         question_text: newQuestion.value.question_text,
         points: newQuestion.value.points,
-        question_type: newQuestion.value.question_type // 'single_choice' ou 'multiple_choice'
+        question_type: newQuestion.value.question_type 
       })
     });
     
     const savedQ = await qRes.json();
     const questionId = savedQ.question_id;
 
-    // 2. Création des options
-    // On boucle sur ce que tu as tapé dans le formulaire (newQuestion.value.options)
     for (const opt of newQuestion.value.options) {
-      if (!opt.option_text) continue; // On ignore les champs vides
+      if (!opt.option_text) continue; 
 
       await fetch('http://localhost:3000/api/question-options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question_id: questionId,
-          text: opt.option_text, // On envoie option_text du JS vers la colonne "text" de SQL
-          is_correct: opt.is_correct ? 1 : 0 // SQL préfère 1/0 pour les booléens
+          text: opt.option_text, 
+          is_correct: opt.is_correct ? 1 : 0 
         })
       });
     }
 
-    // 3. Rafraîchir les données et vider le formulaire
+    
     await loadQuiz();
     isEditing.value = false;
     
-    // Réinitialisation pour la prochaine question
+
     newQuestion.value = {
       question_text: '',
       points: 1,
@@ -277,7 +307,7 @@ async function saveQuestion() {
     alert("Erreur lors de l'enregistrement");
   }
 }
-// Calculates the final score, saves the attempt, and saves the selected answers.
+
 async function submitQuiz() {
   error.value = ''
 
@@ -338,7 +368,7 @@ async function saveAttempt() {
   return data.attempt_id
 }
 
-// Saves all selected answers for one question.
+
 async function saveQuestionAnswers(attemptId, question) {
   const selectedAnswer = answers.value[question.question_id]
   const selectedOptionIds = isMultipleChoice(question) ? selectedAnswer : [selectedAnswer]
@@ -381,6 +411,59 @@ function restartQuiz() {
 function goBack() {
   router.back()
 }
+
+function startEdit(question) {
+  editingQuestionId.value = question.question_id;
+
+  editForm.value = {
+    ...JSON.parse(JSON.stringify(question)),
+
+    options: question.options.map(opt => ({
+      option_id: opt.option_id,
+      text: opt.text, 
+      is_correct: isCorrect(opt.is_correct)
+    }))
+  };
+}
+function cancelEdit() {
+  editingQuestionId.value = null;
+  editForm.value = null;
+}
+
+async function updateQuestion() {
+  try {
+    const qId = editingQuestionId.value;
+
+  
+    await fetch(`http://localhost:3000/api/questions/${qId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question_text: editForm.value.question_text,
+        points: editForm.value.points,
+        question_type: editForm.value.question_type
+      })
+    });
+
+  
+    for (const opt of editForm.value.options) {
+      await fetch(`http://localhost:3000/api/question-options/${opt.option_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: opt.text,
+          is_correct: opt.is_correct ? 1 : 0
+        })
+      });
+    }
+
+    alert("Question mise à jour !");
+    editingQuestionId.value = null;
+    await loadQuiz(); 
+  } catch (err) {
+    alert("Erreur lors de la modification : " + err.message);
+  }
+}
 </script>
 
 <template>
@@ -391,20 +474,20 @@ function goBack() {
       <button class="back-button" @click="goBack">← Back</button>
 
       <p v-if="loading" class="message">Loading MCQ...</p>
-      <p v-if="error && !loading" class="error-message">
-        {{ error }}
-      </p>
+      <p v-if="error && !loading" class="error-message">{{ error }}</p>
+
       <template v-if="!loading && !error">
         <section class="quiz-info">
           <h1>{{ quiz?.title }}</h1>
           <p>{{ quiz?.description || 'No description available.' }}</p>
-
           <div class="quiz-details">
             <span>Questions: {{ questions.length }}</span>
             <span v-if="quiz?.time_limit_minutes">Time: {{ quiz.time_limit_minutes }} min</span>
             <span v-if="quiz?.max_attempts">Attempts: {{ quiz.max_attempts }}</span>
           </div>
         </section>
+
+
         <section v-if="user && user.role === 'teacher'" class="teacher-controls">
           <button @click="isEditing = !isEditing" class="add-btn">
             {{ isEditing ? '✖ Cancel' : '➕ Add New Question' }}
@@ -413,96 +496,119 @@ function goBack() {
           <div v-if="isEditing" class="form-card">
             <h3>Create a New Question</h3>
             
-            <!-- Sélecteur de type de question -->
             <div class="form-group">
               <label>Question Type:</label>
               <select v-model="newQuestion.question_type" class="type-select">
-                <option value="single_choice">Single Choice (Radio Buttons)</option>
+                <option value="single_choice">Single Choice (Radio)</option>
                 <option value="multiple_choice">Multiple Choice (Checkboxes)</option>
               </select>
             </div>
 
             <div class="form-group">
               <label>Question Text:</label>
-              <input v-model="newQuestion.question_text" type="text" placeholder="Enter your question here..." />
+              <input v-model="newQuestion.question_text" type="text" placeholder="Enter question..." />
             </div>
 
             <div class="options-setup">
-              <label>Options (Check all that are correct):</label>
-              <div v-for="(opt, index) in newQuestion.options" :key="index" class="option-setup-row">
+              <label>Options (Check the correct ones):</label>
+              <div v-for="(opt, idx) in newQuestion.options" :key="idx" class="edit-opt-row">
                 <input type="checkbox" v-model="opt.is_correct" />
-                <input v-model="opt.option_text" type="text" :placeholder="'Choice ' + (index + 1)" />
-                <button v-if="newQuestion.options.length > 2" @click="removeOptionField(index)" class="btn-remove">×</button>
+                <input v-model="opt.option_text" :placeholder="'Choice ' + (idx + 1)" />
+                <button v-if="newQuestion.options.length > 2" @click="removeOptionField(idx)" type="button" class="btn-remove">×</button>
               </div>
-              <button @click="addOptionField" class="btn-add-opt">+ Add another option</button>
+              <button @click="addOptionField" type="button" class="btn-add-opt">+ Add option</button>
             </div>
 
             <div class="form-group" style="margin-top: 10px;">
-              <label>Points for this question:</label>
+              <label>Points:</label>
               <input v-model.number="newQuestion.points" type="number" min="1" />
             </div>
 
             <button @click="saveQuestion" class="save-btn">Save to Database</button>
           </div>
         </section>
+
         <section v-if="!examAlreadySubmitted" class="questions">
           <h2>Questions</h2>
-          <div v-if="questions.length === 0" class="empty-box">
-            No questions available for this quiz yet.
-          </div>
+          <div v-if="questions.length === 0" class="empty-box">No questions yet.</div>
+          
           <form v-else @submit.prevent="submitQuiz">
-            <div
-              v-for="(question, index) in questions"
-              :key="question.question_id"
-              class="question-box"
-            >
-              <h3>Question {{ index + 1 }}</h3>
-              <p class="question-type">
-                {{ isMultipleChoice(question) ? 'Multiple answers possible' : 'Single answer' }}
-              </p>
-              <p class="question-text">
-                {{ question.question_text }}
-              </p>
-              <label
-                v-for="option in question.options"
-                :key="option.option_id"
-                class="option"
-                :class="{
-                  correct: submitted && isCorrect(option.is_correct),
-                  wrong:
-                    submitted &&
-                    (isMultipleChoice(question)
-                      ? answers[question.question_id].includes(option.option_id)
-                      : answers[question.question_id] === option.option_id) &&
-                    !isCorrect(option.is_correct),
-                }"
-              >
-                <input
-                  v-if="isMultipleChoice(question)"
-                  v-model="answers[question.question_id]"
-                  type="checkbox"
-                  :value="option.option_id"
-                  :disabled="submitted"
-                />
-                <input
-                  v-else
-                  v-model="answers[question.question_id]"
-                  type="radio"
-                  :name="`question-${question.question_id}`"
-                  :value="option.option_id"
-                  :disabled="submitted"
-                />
-                {{ option.text }}
-              </label>
+            <div v-for="(question, index) in questions" :key="question.question_id" class="question-box">
+              
+              <div v-if="editingQuestionId === question.question_id" class="edit-mode-active">
+                <h3>Editing Question {{ index + 1 }}</h3>
+                <div class="form-group">
+                  <label>Question Text:</label>
+                  <input v-model="editForm.question_text" class="edit-input-text" />
+                </div>
+                
+                <div class="edit-options-list">
+                  <label>Options:</label>
+                  <div v-for="opt in editForm.options" :key="opt.option_id" class="edit-opt-row">
+                    <input type="checkbox" v-model="opt.is_correct" />
+                    <input v-model="opt.text" />
+                  </div>
+                </div>
+                
+                <div class="edit-actions">
+                  <button @click="updateQuestion" type="button" class="btn-save-edit">Save Changes</button>
+                  <button @click="cancelEdit" type="button" class="btn-cancel-edit">✖ Cancel</button>
+                </div>
+              </div>
+
+              <div v-else>
+                <div class="question-header">
+                  <h3>Question {{ index + 1 }}</h3>
+                  <button v-if="user && user.role === 'teacher'" @click="startEdit(question)" type="button" class="btn-small-edit">
+                    Edit
+                  </button>
+                </div>
+                
+                <p class="question-type">
+                  {{ isMultipleChoice(question) ? 'Multiple answers possible' : 'Single answer' }}
+                </p>
+                <p class="question-text">{{ question.question_text }}</p>
+
+                <div class="options-list">
+                  <label
+                    v-for="option in question.options"
+                    :key="option.option_id"
+                    class="option"
+                    :class="{
+                      correct: submitted && isCorrect(option.is_correct),
+                      wrong: submitted && 
+                             (isMultipleChoice(question) 
+                                ? answers[question.question_id].includes(option.option_id) 
+                                : answers[question.question_id] === option.option_id) && 
+                             !isCorrect(option.is_correct),
+                    }"
+                  >
+                    <input
+                      v-if="isMultipleChoice(question)"
+                      v-model="answers[question.question_id]"
+                      type="checkbox"
+                      :value="option.option_id"
+                      :disabled="submitted || user.role === 'teacher'"
+                    />
+                    <input
+                      v-else
+                      v-model="answers[question.question_id]"
+                      type="radio"
+                      :name="`question-${question.question_id}`"
+                      :value="option.option_id"
+                      :disabled="submitted || user.role === 'teacher'"
+                    />
+                    {{ option.text }}
+                  </label>
+                </div>
+              </div>
             </div>
-            <button v-if="!submitted" type="submit" class="submit-button">Submit MCQ</button>
+
+            <button v-if="!submitted && user.role === 'student'" type="submit" class="submit-button">Submit MCQ</button>
           </form>
           <div v-if="submitted" class="result-box">
             <h2>{{ isExam() ? 'Exam submitted' : 'Saved result' }}</h2>
             <p>{{ score }} / {{ total }}</p>
-            <p v-if="isExam()" class="exam-message">
-              Your exam has been submitted. You cannot review or retake it.
-            </p>
             <button v-if="isPractice()" type="button" class="restart-button" @click="restartQuiz">
               Restart MCQ
             </button>
@@ -721,5 +827,45 @@ function goBack() {
   .quiz-info h1 {
     font-size: 1.7rem;
   }
+}
+.edit-mode-active {
+  background: #fff9db; /* Fond jaune léger pour montrer qu'on modifie */
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.edit-input-text {
+  width: 100%;
+  padding: 10px;
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  border: 1px solid #fab005;
+}
+
+.edit-opt-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.edit-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-small-edit {
+  background: #e9ecef;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>
