@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AppHeader from '../components/PageHeader.vue'
 import AppFooter from '../components/PageFooter.vue'
@@ -13,489 +13,295 @@ const user = ref(storedUser ? JSON.parse(storedUser) : null)
 const quiz = ref(null)
 const questions = ref([])
 const answers = ref({})
-
-
 const loading = ref(true)
 const error = ref('')
 const submitted = ref(false)
-
 const score = ref(0)
 const total = ref(0)
 const lastAttemptId = ref(null)
-
 const examAlreadySubmitted = ref(false)
 
-function isCorrect(value) {
-  return value === true || value === 1 || value === 'true'
-}
-const isMultipleChoice = (question) => {
+const timeLeft = ref(null)
+const timerInterval = ref(null)
+const isTimerRunning = ref(false)
+const isEditing = ref(false)
+const editingQuestionId = ref(null)
+const editForm = ref(null)
 
-  return question.question_type === 'multiple_choice';
-};
-
-const editingQuestionId = ref(null); 
-const editForm = ref(null); 
-
-function isExam() {  return quiz.value?.type === 'exam'}
-function isPractice() {  return quiz.value?.type === 'practice' || !isExam()}
-
-const isEditing = ref(false);
 const newQuestion = ref({
   question_text: '',
   points: 1,
-  question_type: 'single_choice', 
+  question_type: 'single_choice',
   options: [
     { option_text: '', is_correct: false },
     { option_text: '', is_correct: false },
     { option_text: '', is_correct: false },
     { option_text: '', is_correct: false }
   ]
-});
+})
 
+// --- LOGIQUE CORE ---
+function isCorrect(value) { return value === true || value === 1 || value === 'true' }
+const isMultipleChoice = (q) => q.question_type === 'multiple_choice'
+function isExam() { return quiz.value?.type === 'exam' }
+function isPractice() { return quiz.value?.type === 'practice' || !isExam() }
 
-function addOptionField() {
-  newQuestion.value.options.push({ option_text: '', is_correct: false });
-}
+const scoreOutOf20 = computed(() => {
+  if (total.value === 0) return "0.00"
+  return ((score.value / total.value) * 20).toFixed(2)
+})
 
+const formattedTime = computed(() => {
+  if (timeLeft.value === null) return "--:--"
+  const mins = Math.floor(timeLeft.value / 60)
+  const secs = timeLeft.value % 60
+  return `${mins}:${secs < 10 ? '0' : ''}${secs}`
+})
 
-function removeOptionField(index) {
-  if (newQuestion.value.options.length > 2) {
-    newQuestion.value.options.splice(index, 1);
+// --- GESTION DU TIMER ---
+function startTimer() {
+  if (timerInterval.value) stopTimer()
+  if (quiz.value?.time_limit_minutes) {
+    timeLeft.value = quiz.value.time_limit_minutes * 60
+    isTimerRunning.value = true
+    timerInterval.value = setInterval(() => {
+      if (timeLeft.value > 0) {
+        timeLeft.value--
+      } else {
+        stopTimer()
+        autoSubmit()
+      }
+    }, 1000)
   }
 }
 
-watch(
-  () => editForm.value?.options,
-  (newOptions) => {
-    if (!newOptions) return;
+function stopTimer() {
+  if (timerInterval.value) clearInterval(timerInterval.value)
+  timerInterval.value = null
+  isTimerRunning.value = false
+}
 
-    const correctCount = newOptions.filter(opt => isCorrect(opt.is_correct)).length;
+async function autoSubmit() {
+  if (submitted.value) return
+  alert("Time is up! Your quiz is being submitted automatically.")
+  await submitQuiz()
+}
 
-  
-    if (correctCount > 1) {
-      editForm.value.question_type = 'multiple_choice';
-    } 
-
-    else if (correctCount === 1) {
-      editForm.value.question_type = 'single_choice';
-    }
-  },
-  { deep: true } 
-);
-watch(
-  () => newQuestion.value.options,
-  (newOptions) => {
-    const correctCount = newOptions.filter(opt => opt.is_correct).length;
-    if (correctCount > 1) {
-      newQuestion.value.question_type = 'multiple_choice';
-    } else if (correctCount === 1) {
-      newQuestion.value.question_type = 'single_choice';
-    }
-  },
-  { deep: true }
-);
+// --- CHARGEMENT DES DONNÉES ---
 async function loadQuiz() {
-
-  console.log("Démarrage du chargement du quiz...");
-  loading.value = true;
-  error.value = '';
-
-
+  loading.value = true
+  error.value = ''
   try {
-    const quizId = route.params.id;
-    console.log('user.value:', user.value)
-    console.log('quizId:', quizId)
+    const qId = route.params.id
+    const qRes = await fetch(`http://localhost:3000/api/quizzes/${qId}`)
+    quiz.value = await qRes.json()
 
-
-    const quizResponse = await fetch(`http://localhost:3000/api/quizzes/${quizId}`);
-    if (!quizResponse.ok) throw new Error('Impossible de charger les détails du quiz');
-    const quizData = await quizResponse.json();
-    console.log('quizData:', quizData)
-    quiz.value = quizData;
-
-
-
-    const questionsResponse = await fetch(`http://localhost:3000/api/questions/quiz/${quizId}`);
-    if (!questionsResponse.ok) throw new Error('Impossible de charger les questions');
-    const questionsData = await questionsResponse.json();
-    console.log('questionsData:', questionsData)
-
-
-    const loadedQuestions = [];
-    for (const question of questionsData) {
-      const optsRes = await fetch(`http://localhost:3000/api/question-options/question/${question.question_id}`);
-      const optsData = await optsRes.json();
-      console.log('options for question', question.question_id, ':', optsData)
-
-      loadedQuestions.push({ 
-        ...question, 
-        options: optsData 
-      });
-    }
-
-    questions.value = loadedQuestions;
+    const quesRes = await fetch(`http://localhost:3000/api/questions/quiz/${qId}`)
+    const quesData = await quesRes.json()
     
-
-    if (typeof resetAnswers === 'function') {
-      resetAnswers();
+    const loaded = []
+    for (const q of quesData) {
+      const oRes = await fetch(`http://localhost:3000/api/question-options/question/${q.question_id}`)
+      const oData = await oRes.json()
+      loaded.push({ ...q, options: oData })
     }
+    questions.value = loaded
+    resetAnswers()
 
-
-    if (user.value && user.value.role === 'student') {
-      console.log("Rôle étudiant détecté : chargement des tentatives...");
-      if (typeof loadLastAttempt === 'function') {
-        await loadLastAttempt();
-      }
-    } else {
-      console.log("Rôle Teacher/Admin détecté : skipping loadLastAttempt.");
+    if (user.value?.role === 'student') {
+      await loadLastAttempt()
+      if (!submitted.value) startTimer()
     }
   } catch (err) {
-    console.error("Erreur fatale dans loadQuiz:", err);
-    error.value = "Erreur de chargement : " + err.message;
+    error.value = "Error loading quiz"
   } finally {
-    loading.value = false;
-    console.log("Chargement terminé. loading:", loading.value, "error:", error.value);
+    loading.value = false
   }
 }
-
-
-function resetAnswers() {
-  const emptyAnswers = {}
-
-  questions.value.forEach((question) => {
-    emptyAnswers[question.question_id] = isMultipleChoice(question) ? [] : null
-  })
-
-  answers.value = emptyAnswers
-}
-
 
 async function loadLastAttempt() {
-  const quizId = route.params.id
-
-  const attemptsResponse = await fetch(
-    `http://localhost:3000/api/attempts/student/${user.value.user_id}/quiz/${quizId}`,
-  )
-
-  const attemptsData = await attemptsResponse.json()
-
-  if (!attemptsResponse.ok) {
-    throw new Error(attemptsData.message || attemptsData.error || 'Failed to load attempts')
-  }
-
-  if (attemptsData.length === 0) {
-    return
-  }
-
-  const lastAttempt = attemptsData[0]
-
-  lastAttemptId.value = lastAttempt.attempt_id
-  score.value = Number(lastAttempt.score || 0)
-  total.value = getTotalPoints()
-  submitted.value = true
-
-  if (isExam()) {
-    examAlreadySubmitted.value = true
-    return
-  }
-
-  const answersResponse = await fetch(
-    `http://localhost:3000/api/attempt-answers/attempt/${lastAttempt.attempt_id}`,
-  )
-
-  const answersData = await answersResponse.json()
-
-  if (!answersResponse.ok) {
-    throw new Error(answersData.message || answersData.error || 'Failed to load attempt answers')
-  }
-
-  resetAnswers()
-
-  answersData.forEach((answer) => {
-    const question = questions.value.find((q) => q.question_id === answer.question_id)
-
-    if (!question) return
-
-    if (isMultipleChoice(question)) {
-      answers.value[answer.question_id].push(answer.option_id)
-    } else {
-      answers.value[answer.question_id] = answer.option_id
-    }
-  })
-}
-
-onMounted(() => {
-  loadQuiz()
-})
-function getTotalPoints() {
-  return questions.value.reduce((sum, question) => {
-    return sum + Number(question.points || 1)
-  }, 0)
-}
-
-
-function getQuestionScore(question) {
-  const points = Number(question.points || 1)
-  const selectedAnswer = answers.value[question.question_id]
-  const correctOptions = question.options.filter((option) => isCorrect(option.is_correct))
-
-  if (isMultipleChoice(question)) {
-    const selectedIds = selectedAnswer
-    const correctIds = correctOptions.map((option) => option.option_id)
-
-    const sameAmount = selectedIds.length === correctIds.length
-    const allSelectedAreCorrect = selectedIds.every((id) => correctIds.includes(id))
-
-    return sameAmount && allSelectedAreCorrect ? points : 0
-  }
-
-  const selectedOption = question.options.find((option) => option.option_id === selectedAnswer)
-
-  return selectedOption && isCorrect(selectedOption.is_correct) ? points : 0
-}
-
-async function saveQuestion() {
   try {
-
-    const qRes = await fetch('http://localhost:3000/api/questions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        quiz_id: route.params.id,
-        question_text: newQuestion.value.question_text,
-        points: newQuestion.value.points,
-        question_type: newQuestion.value.question_type 
-      })
-    });
-    
-    const savedQ = await qRes.json();
-    const questionId = savedQ.question_id;
-
-    for (const opt of newQuestion.value.options) {
-      if (!opt.option_text) continue; 
-
-      await fetch('http://localhost:3000/api/question-options', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question_id: questionId,
-          text: opt.option_text, 
-          is_correct: opt.is_correct ? 1 : 0 
-        })
-      });
+    const res = await fetch(`http://localhost:3000/api/attempts/student/${user.value.user_id}/quiz/${route.params.id}`)
+    const data = await res.json()
+    if (data && data.length > 0) {
+      const last = data[0]
+      lastAttemptId.value = last.attempt_id
+      score.value = Number(last.score || 0)
+      total.value = getTotalPoints()
+      submitted.value = true
+      if (isExam()) examAlreadySubmitted.value = true
     }
-
-    
-    await loadQuiz();
-    isEditing.value = false;
-    
-
-    newQuestion.value = {
-      question_text: '',
-      points: 1,
-      question_type: 'single_choice',
-      options: [
-        { option_text: '', is_correct: false },
-        { option_text: '', is_correct: false },
-        { option_text: '', is_correct: false },
-        { option_text: '', is_correct: false }
-      ]
-    };
-
-  } catch (err) {
-    console.error("Erreur saveQuestion:", err);
-    alert("Erreur lors de l'enregistrement");
-  }
+  } catch (e) { console.error(e) }
 }
 
+function resetAnswers() {
+  const empty = {}
+  questions.value.forEach(q => {
+    empty[q.question_id] = isMultipleChoice(q) ? [] : null
+  })
+  answers.value = empty
+}
+
+// --- ACTIONS ET SOUMISSION ---
 async function submitQuiz() {
-  error.value = ''
-
-  if (isExam()) {
-    const confirmed = confirm(
-      'Are you sure you want to submit this exam? You will not be able to try it again.',
-    )
-
-    if (!confirmed) {
-      return
-    }
-  }
-
-  if (isExam() && lastAttemptId.value) {
-    error.value = 'You have already submitted this exam.'
-    return
-  }
-
-  score.value = questions.value.reduce((sum, question) => {
-    return sum + getQuestionScore(question)
-  }, 0)
-
+  stopTimer()
+  score.value = questions.value.reduce((sum, q) => sum + getQuestionScore(q), 0)
   total.value = getTotalPoints()
   submitted.value = true
 
   try {
     const attemptId = await saveAttempt()
-
-    for (const question of questions.value) {
-      await saveQuestionAnswers(attemptId, question)
+    for (const q of questions.value) {
+      if (answers.value[q.question_id]) await saveQuestionAnswers(attemptId, q)
     }
-  } catch (err) {
-    error.value = err.message
-  }
+  } catch (err) { error.value = err.message }
 }
 
 async function saveAttempt() {
-  const response = await fetch('http://localhost:3000/api/attempts', {
+  const res = await fetch('http://localhost:3000/api/attempts', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      student_id: user.value.user_id,
-      quiz_id: quiz.value.quiz_id,
-      score: score.value,
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ student_id: user.value.user_id, quiz_id: quiz.value.quiz_id, score: score.value })
   })
-
-  const data = await response.json()
-
-  if (!response.ok) {
-    throw new Error(data.message || data.error || 'Failed to save attempt')
-  }
-
-  lastAttemptId.value = data.attempt_id
-
+  const data = await res.json()
   return data.attempt_id
 }
 
-
 async function saveQuestionAnswers(attemptId, question) {
-  const selectedAnswer = answers.value[question.question_id]
-  const selectedOptionIds = isMultipleChoice(question) ? selectedAnswer : [selectedAnswer]
-  const awardedPoints = getQuestionScore(question)
-
-  for (const optionId of selectedOptionIds) {
+  const selected = isMultipleChoice(question) ? answers.value[question.question_id] : [answers.value[question.question_id]]
+  for (const optionId of selected) {
     if (!optionId) continue
-
-    const response = await fetch('http://localhost:3000/api/attempt-answers', {
+    await fetch('http://localhost:3000/api/attempt-answers', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        attempt_id: attemptId,
-        question_id: question.question_id,
-        option_id: optionId,
-        is_selected: true,
-        awarded_points: awardedPoints,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attempt_id: attemptId, question_id: question.question_id, option_id: optionId, is_selected: true, awarded_points: getQuestionScore(question) })
     })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || data.error || 'Failed to save answer')
-    }
   }
 }
 
 function restartQuiz() {
+  stopTimer()
   resetAnswers()
   submitted.value = false
   score.value = 0
-  total.value = 0
-  error.value = ''
   lastAttemptId.value = null
+  startTimer()
 }
 
-function goBack() {
-  router.back()
+// --- GESTION PROFESSEUR ---
+async function updateQuizSettings() {
+  try {
+    await fetch(`http://localhost:3000/api/quizzes/${route.params.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        title: quiz.value.title, 
+        description: quiz.value.description, 
+        time_limit_minutes: quiz.value.time_limit_minutes,
+        max_attempts: quiz.value.max_attempts 
+      })
+    })
+    alert("Settings updated!")
+  } catch (err) { alert("Error updating settings") }
 }
 
-function startEdit(question) {
-  editingQuestionId.value = question.question_id;
-
-  editForm.value = {
-    ...JSON.parse(JSON.stringify(question)),
-
-    options: question.options.map(opt => ({
-      option_id: opt.option_id,
-      text: opt.text, 
-      is_correct: isCorrect(opt.is_correct)
-    }))
-  };
+async function saveQuestion() {
+  try {
+    const qRes = await fetch('http://localhost:3000/api/questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quiz_id: route.params.id, question_text: newQuestion.value.question_text, points: newQuestion.value.points, question_type: newQuestion.value.question_type })
+    })
+    const saved = await qRes.json()
+    for (const opt of newQuestion.value.options) {
+      if (opt.option_text) {
+        await fetch('http://localhost:3000/api/question-options', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question_id: saved.question_id, text: opt.option_text, is_correct: opt.is_correct ? 1 : 0 })
+        })
+      }
+    }
+    await loadQuiz()
+    isEditing.value = false
+  } catch (e) { alert("Error saving question") }
 }
-function cancelEdit() {
-  editingQuestionId.value = null;
-  editForm.value = null;
+
+function startEdit(q) {
+  editingQuestionId.value = q.question_id
+  editForm.value = JSON.parse(JSON.stringify(q))
 }
+
+function cancelEdit() { editingQuestionId.value = null }
 
 async function updateQuestion() {
   try {
-    const qId = editingQuestionId.value;
-
-  
-    await fetch(`http://localhost:3000/api/questions/${qId}`, {
+    await fetch(`http://localhost:3000/api/questions/${editingQuestionId.value}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        question_text: editForm.value.question_text,
-        points: editForm.value.points,
-        question_type: editForm.value.question_type
-      })
-    });
-
-  
-    for (const opt of editForm.value.options) {
-      await fetch(`http://localhost:3000/api/question-options/${opt.option_id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: opt.text,
-          is_correct: opt.is_correct ? 1 : 0
-        })
-      });
-    }
-
-    alert("Question mise à jour !");
-    editingQuestionId.value = null;
-    await loadQuiz(); 
-  } catch (err) {
-    alert("Erreur lors de la modification : " + err.message);
-  }
+      body: JSON.stringify({ question_text: editForm.value.question_text, points: editForm.value.points, question_type: editForm.value.question_type })
+    })
+    editingQuestionId.value = null
+    await loadQuiz()
+  } catch (e) { alert("Error updating question") }
 }
+
+// --- HELPERS ---
+function getTotalPoints() { return questions.value.reduce((s, q) => s + Number(q.points || 1), 0) }
+function getQuestionScore(q) {
+  const ans = answers.value[q.question_id]
+  if (isMultipleChoice(q)) {
+    const correctIds = q.options.filter(o => isCorrect(o.is_correct)).map(o => o.option_id)
+    return (ans.length === correctIds.length && ans.every(id => correctIds.includes(id))) ? q.points : 0
+  }
+  const opt = q.options.find(o => o.option_id === ans)
+  return opt && isCorrect(opt.is_correct) ? q.points : 0
+}
+function goBack() { router.back() }
+function addOptionField() { newQuestion.value.options.push({ option_text: '', is_correct: false }) }
+function removeOptionField(i) { newQuestion.value.options.splice(i, 1) }
+
+// --- WATCHERS ---
+watch(() => newQuestion.value.options, (opts) => {
+  const count = opts.filter(o => o.is_correct).length
+  newQuestion.value.question_type = count > 1 ? 'multiple_choice' : 'single_choice'
+}, { deep: true })
+
+onMounted(loadQuiz)
+onUnmounted(stopTimer)
 </script>
 
 <template>
   <div class="quiz-page">
     <AppHeader :user="user" />
-
     <main class="content">
       <button class="back-button" @click="goBack">← Back</button>
 
-      <p v-if="loading" class="message">Loading MCQ...</p>
-      <p v-if="error && !loading" class="error-message">{{ error }}</p>
-
-      <template v-if="!loading && !error">
-        <section class="quiz-info">
-          <h1>{{ quiz?.title }}</h1>
-          <p>{{ quiz?.description || 'No description available.' }}</p>
-          <div class="quiz-details">
-            <span>Questions: {{ questions.length }}</span>
-            <span v-if="quiz?.time_limit_minutes">Time: {{ quiz.time_limit_minutes }} min</span>
-            <span v-if="quiz?.max_attempts">Attempts: {{ quiz.max_attempts }}</span>
+      <template v-if="!loading && quiz">
+        <!-- HEADER PROF : REGLAGES + BOUTON AJOUT -->
+        <section v-if="user?.role === 'teacher'" class="teacher-controls">
+          <div class="quiz-settings-panel">
+            <h3>⚙️ Quiz Configuration</h3>
+            <div class="settings-grid">
+              <div class="setting-item">
+                <label>Time (min)</label>
+                <input type="number" v-model.number="quiz.time_limit_minutes" />
+              </div>
+              <div class="setting-item">
+                <label>Max Attempts</label>
+                <input type="number" v-model.number="quiz.max_attempts" />
+              </div>
+              <button @click="updateQuizSettings" class="btn-save-settings">💾 Save Settings</button>
+            </div>
           </div>
-        </section>
 
-
-        <section v-if="user && user.role === 'teacher'" class="teacher-controls">
           <button @click="isEditing = !isEditing" class="add-btn">
             {{ isEditing ? '✖ Cancel' : '➕ Add New Question' }}
           </button>
 
+          <!-- LE FORMULAIRE QUI MANQUAIT -->
           <div v-if="isEditing" class="form-card">
             <h3>Create a New Question</h3>
-            
             <div class="form-group">
               <label>Question Type:</label>
               <select v-model="newQuestion.question_type" class="type-select">
@@ -526,346 +332,280 @@ async function updateQuestion() {
 
             <button @click="saveQuestion" class="save-btn">Save to Database</button>
           </div>
+          <hr class="separator" />
         </section>
 
+        <!-- QUESTIONS & TIMER POUR ETUDIANTS -->
         <section v-if="!examAlreadySubmitted" class="questions">
-          <h2>Questions</h2>
-          <div v-if="questions.length === 0" class="empty-box">No questions yet.</div>
-          
-          <form v-else @submit.prevent="submitQuiz">
-            <div v-for="(question, index) in questions" :key="question.question_id" class="question-box">
+          <div v-if="timeLeft !== null && !submitted && user.role === 'student'" 
+               class="timer-bar" :class="{ 'timer-low': timeLeft < 60 }">
+            ⏱️ Remaining: {{ formattedTime }}
+          </div>
+
+          <form @submit.prevent="submitQuiz">
+            <div v-for="(q, idx) in questions" :key="q.question_id" class="question-box">
               
-              <div v-if="editingQuestionId === question.question_id" class="edit-mode-active">
-                <h3>Editing Question {{ index + 1 }}</h3>
+              <!-- MODE ÉDITION D'UNE QUESTION EXISTANTE -->
+              <div v-if="editingQuestionId === q.question_id" class="edit-mode-active">
                 <div class="form-group">
-                  <label>Question Text:</label>
+                  <label>Edit Question Text:</label>
                   <input v-model="editForm.question_text" class="edit-input-text" />
                 </div>
-                
                 <div class="edit-options-list">
-                  <label>Options:</label>
                   <div v-for="opt in editForm.options" :key="opt.option_id" class="edit-opt-row">
                     <input type="checkbox" v-model="opt.is_correct" />
                     <input v-model="opt.text" />
                   </div>
                 </div>
-                
                 <div class="edit-actions">
-                  <button @click="updateQuestion" type="button" class="btn-save-edit">Save Changes</button>
+                  <button @click="updateQuestion" type="button" class="btn-save-edit">✅ Save</button>
                   <button @click="cancelEdit" type="button" class="btn-cancel-edit">✖ Cancel</button>
                 </div>
               </div>
 
+              <!-- AFFICHAGE NORMAL -->
               <div v-else>
                 <div class="question-header">
-                  <h3>Question {{ index + 1 }}</h3>
-                  <button v-if="user && user.role === 'teacher'" @click="startEdit(question)" type="button" class="btn-small-edit">
-                    Edit
-                  </button>
+                  <h3>Question {{ idx + 1 }}</h3>
+                  <button v-if="user.role === 'teacher'" @click="startEdit(q)" type="button" class="btn-small-edit">✏️ Edit</button>
                 </div>
-                
-                <p class="question-type">
-                  {{ isMultipleChoice(question) ? 'Multiple answers possible' : 'Single answer' }}
-                </p>
-                <p class="question-text">{{ question.question_text }}</p>
-
+                <p class="question-text">{{ q.question_text }}</p>
                 <div class="options-list">
-                  <label
-                    v-for="option in question.options"
-                    :key="option.option_id"
-                    class="option"
-                    :class="{
-                      correct: submitted && isCorrect(option.is_correct),
-                      wrong: submitted && 
-                             (isMultipleChoice(question) 
-                                ? answers[question.question_id].includes(option.option_id) 
-                                : answers[question.question_id] === option.option_id) && 
-                             !isCorrect(option.is_correct),
-                    }"
-                  >
-                    <input
-                      v-if="isMultipleChoice(question)"
-                      v-model="answers[question.question_id]"
-                      type="checkbox"
-                      :value="option.option_id"
-                      :disabled="submitted || user.role === 'teacher'"
-                    />
-                    <input
-                      v-else
-                      v-model="answers[question.question_id]"
-                      type="radio"
-                      :name="`question-${question.question_id}`"
-                      :value="option.option_id"
-                      :disabled="submitted || user.role === 'teacher'"
-                    />
-                    {{ option.text }}
+                  <label v-for="opt in q.options" :key="opt.option_id" class="option" 
+                         :class="{ correct: submitted && isCorrect(opt.is_correct) }">
+                    <input :type="isMultipleChoice(q) ? 'checkbox' : 'radio'" 
+                           v-model="answers[q.question_id]" 
+                           :value="opt.option_id" 
+                           :disabled="submitted || user.role === 'teacher'" />
+                    {{ opt.text }}
                   </label>
                 </div>
               </div>
             </div>
-
             <button v-if="!submitted && user.role === 'student'" type="submit" class="submit-button">Submit MCQ</button>
           </form>
+
           <div v-if="submitted" class="result-box">
-            <h2>{{ isExam() ? 'Exam submitted' : 'Saved result' }}</h2>
-            <p>{{ score }} / {{ total }}</p>
-            <button v-if="isPractice()" type="button" class="restart-button" @click="restartQuiz">
-              Restart MCQ
-            </button>
+            <div class="final-score">
+              <span class="big-score">{{ scoreOutOf20 }} / 20</span>
+              <p>{{ score }} / {{ total }} points</p>
+            </div>
+            <button v-if="!isExam()" @click="restartQuiz" class="restart-button">Try Again</button>
           </div>
         </section>
       </template>
     </main>
-
     <AppFooter />
   </div>
-</template>
-
-<style scoped>
-.exam-message {
-  margin: 0.8rem 0 0;
-  color: #747789;
-  font-size: 0.95rem;
-}
-
+</template><style scoped>
+/* --- MISE EN PAGE GLOBALE --- */
 .quiz-page {
+  background-color: #f4f7f6;
   min-height: 100vh;
-  background: #ffffff;
-  color: #02143a;
-  font-family: Arial, sans-serif;
+  padding-bottom: 50px;
+  font-family: 'Inter', sans-serif;
 }
 
 .content {
   max-width: 900px;
   margin: 0 auto;
-  padding: 3rem 2rem;
+  padding: 20px;
 }
 
+/* --- BOUTON RETOUR --- */
 .back-button {
-  margin-bottom: 1.5rem;
-  padding: 0.75rem 1rem;
+  background: none;
   border: none;
-  border-radius: 10px;
-  background: #f0f0f4;
-  color: #05051f;
-  font-weight: 800;
+  color: #666;
+  font-weight: 600;
   cursor: pointer;
+  margin-bottom: 20px;
+  transition: color 0.3s;
 }
+.back-button:hover { color: #05051f; }
 
-.back-button:hover {
-  opacity: 0.85;
-}
-
-.quiz-info {
-  padding: 2rem;
-  background: white;
-  border: 1px solid #e5e5e5;
-  border-radius: 18px;
-  box-shadow: 0 10px 28px rgba(5, 12, 27, 0.05);
-}
-
-.quiz-info h1 {
-  margin: 0 0 1rem;
-  color: #05051f;
-  font-size: 2rem;
-}
-
-.quiz-info p {
-  margin: 0;
-  color: #747789;
-  line-height: 1.6;
-}
-
-.quiz-details {
-  margin-top: 1.5rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-}
-
-.quiz-details span {
-  padding: 0.45rem 0.8rem;
-  background: #f7f7fb;
-  border-radius: 999px;
-  color: #05051f;
-  font-size: 0.9rem;
-  font-weight: 800;
-}
-
-.questions {
-  margin-top: 2.5rem;
-}
-
-.questions h2 {
-  margin: 0 0 1rem;
-  color: #05051f;
-}
-
-.question-box {
-  padding: 1.5rem;
-  margin-bottom: 1.2rem;
-  background: white;
-  border: 1px solid #e5e5e5;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(5, 12, 27, 0.04);
-}
-
-.question-box h3 {
-  margin: 0 0 0.4rem;
-  color: #05051f;
-}
-
-.question-type {
-  margin: 0 0 0.8rem;
-  color: #747789;
-  font-size: 0.9rem;
-  font-weight: 800;
-}
-
-.question-text {
-  margin: 0 0 1rem;
-  font-weight: 700;
-  color: #02143a;
-}
-
-.option {
-  padding: 0.8rem 1rem;
-  margin-bottom: 0.7rem;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  border: 1px solid #e5e5e5;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.option:hover {
-  background: #f7f7fb;
-}
-
-.option.correct {
-  background: #dcfce7;
-  border-color: #166534;
-}
-
-.option.wrong {
-  background: #fee2e2;
-  border-color: #991b1b;
-}
-
-.submit-button {
-  width: 100%;
-  padding: 0.95rem;
-  border: none;
-  border-radius: 12px;
+/* --- TIMER STICKY (Le truc qui flash) --- */
+.timer-bar {
+  position: sticky;
+  top: 20px;
+  z-index: 1000;
   background: #05051f;
   color: white;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.submit-button:hover {
-  opacity: 0.92;
-}
-
-.result-box {
-  margin-top: 1.5rem;
-  padding: 1.5rem;
+  padding: 15px 25px;
+  border-radius: 50px;
   text-align: center;
-  background: #f7f7fb;
-  border-radius: 16px;
-}
-
-.result-box h2 {
-  margin: 0 0 0.5rem;
-  color: #05051f;
-}
-
-.result-box p {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 900;
-}
-
-.restart-button {
-  margin-top: 1rem;
-  padding: 0.85rem 1.2rem;
-  border: none;
-  border-radius: 12px;
-  background: #05051f;
-  color: white;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.restart-button:hover {
-  opacity: 0.92;
-}
-
-.message,
-.error-message {
-  padding: 1rem;
-  border-radius: 12px;
   font-weight: 800;
+  font-size: 1.2rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  margin-bottom: 30px;
+  border: 2px solid #3e3e5e;
 }
 
-.message {
-  background: #f7f7fb;
-  color: #05051f;
+.timer-low {
+  background: #e74c3c;
+  border-color: #ff7675;
+  animation: pulse 1s infinite;
 }
 
-.error-message {
-  background: #fee2e2;
-  color: #991b1b;
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
 }
 
-@media (max-width: 700px) {
-  .content {
-    padding: 2rem 1rem;
-  }
-
-  .quiz-info h1 {
-    font-size: 1.7rem;
-  }
+/* --- PANNEAU PROF (Settings) --- */
+.quiz-settings-panel {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
 }
-.edit-mode-active {
-  background: #fff9db; /* Fond jaune léger pour montrer qu'on modifie */
+
+.settings-grid {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.setting-item label {
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.setting-item input {
   padding: 10px;
   border-radius: 8px;
+  border: 1px solid #ddd;
+  width: 100px;
+  font-weight: bold;
 }
 
-.edit-input-text {
-  width: 100%;
-  padding: 10px;
-  font-size: 1.1rem;
-  margin-bottom: 15px;
-  border: 1px solid #fab005;
+/* --- FORMULAIRE D'AJOUT DE QUESTION --- */
+.form-card {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 16px;
+  border: 2px solid #05051f;
+  margin-bottom: 30px;
 }
 
 .edit-opt-row {
   display: flex;
-  gap: 10px;
-  margin-bottom: 5px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
-.edit-actions {
-  margin-top: 15px;
-  display: flex;
-  gap: 10px;
+.edit-opt-row input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
 }
 
-.btn-small-edit {
-  background: #e9ecef;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.8rem;
+/* --- QUESTIONS --- */
+.question-box {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+  border: 1px solid #eee;
 }
 
 .question-header {
   display: flex;
   justify-content: space-between;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+}
+
+.question-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+/* --- OPTIONS --- */
+.option {
+  display: flex;
   align-items: center;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.option:hover:not(.disabled) {
+  background-color: #f8f9ff;
+  border-color: #05051f;
+}
+
+.option input { margin-right: 15px; transform: scale(1.2); }
+
+/* --- COULEURS DE RESULTATS --- */
+.option.correct {
+  background-color: #d1f2eb;
+  border-color: #1abc9c;
+  color: #0e6251;
+}
+
+/* --- BOUTONS --- */
+.add-btn {
+  background: #00b894;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 18px;
+  background: #05051f;
+  color: white;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.btn-save-settings {
+  background: #05051f;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+/* --- BOX DE FIN --- */
+.result-box {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 20px;
+  margin-top: 30px;
+}
+
+.big-score {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #05051f;
 }
 </style>
