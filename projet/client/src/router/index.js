@@ -63,7 +63,7 @@
     path: '/quizzes/:id',
     name: 'quiz-detail',
     component: QuizPage,
-    meta: { requiresAuth: true, role: 'student' },
+    meta: { requiresAuth: true },
     }
     ]
   })

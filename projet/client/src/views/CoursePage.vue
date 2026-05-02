@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Header from '../components/PageHeader.vue'
 import Footer from '../components/PageFooter.vue'
@@ -20,9 +20,11 @@ const editingQuizId = ref(null)
 const editQuiz = ref({ title: '', description: '', type: 'practice' })
 const quizError = ref('')
 const quizMessage = ref('')
+const courseMessage = ref('')
 
 const loading = ref(true)
 const error = ref('')
+const isTeacher = computed(() => String(user.value?.role || '').toLowerCase() === 'teacher')
 
 onMounted(async () => {
   if (!user.value) {
@@ -53,6 +55,10 @@ async function fetchCourseData() {
     }
 
     course.value = courseData
+    courseForm.value = {
+      title: courseData.title || '',
+      short_description: courseData.short_description || '',
+    }
 
     const modulesResponse = await fetch(`http://localhost:3000/api/modules/course/${courseId}`)
     const modulesData = await modulesResponse.json()
@@ -112,6 +118,7 @@ async function updateCourse() {
   }
 
   error.value = ''
+  courseMessage.value = ''
   loading.value = true
 
   try {
@@ -131,6 +138,7 @@ async function updateCourse() {
       throw new Error(data.message || data.error || 'Failed to update course')
     }
 
+    courseMessage.value = 'Course updated successfully.'
     await fetchCourseData()
   } catch (err) {
     error.value = err.message
@@ -242,6 +250,7 @@ function openQuiz(quiz) {
     return
   }
 
+  // On envoie TOUT LE MONDE (Teacher et Student) sur la page du quiz
   router.push(`/quizzes/${quizId}`)
 }
 </script>
@@ -273,8 +282,9 @@ function openQuiz(quiz) {
             <span>MCQs: {{ quizzes.length }}</span>
           </div>
 
-          <div v-if="user.value?.role === 'teacher'" class="teacher-course-panel">
+          <div v-if="isTeacher" class="teacher-course-panel">
             <h2>Teacher controls</h2>
+            <div v-if="courseMessage" class="success-message">{{ courseMessage }}</div>
             <div class="form-group">
               <label>Course title</label>
               <input v-model="courseForm.title" type="text" />
@@ -371,7 +381,7 @@ function openQuiz(quiz) {
             No MCQs available for this course yet.
           </div>
 
-          <ul v-else class="quiz-list">
+              <ul v-else class="quiz-list">
             <li v-for="quiz in quizzes" :key="quiz.quiz_id" class="quiz-item">
               <div>
                 <h3>{{ quiz.title }}</h3>
@@ -380,14 +390,17 @@ function openQuiz(quiz) {
               </div>
 
               <button
-                v-if="user.value?.role === 'student' && (quiz.type !== 'exam' || !quiz.last_attempt)"
+                v-if="isTeacher || (user?.role === 'student' && (quiz.type !== 'exam' || !quiz.last_attempt))"
                 @click="openQuiz(quiz)"
               >
-                Open MCQ
+                {{ isTeacher ? 'Open quiz' : 'Open MCQ' }}
               </button>
 
-              <div v-else-if="quiz.last_attempt" class="score-badge">Score: {{ quiz.last_attempt.score }}</div>
-              <div v-else-if="user.value?.role !== 'student'" class="info-message">
+              <div v-else-if="quiz.last_attempt" class="score-badge">
+                Score: {{ quiz.last_attempt.score }}
+              </div>
+
+              <div v-else class="info-message">
                 Only students can open this quiz.
               </div>
             </li>
@@ -537,6 +550,7 @@ function openQuiz(quiz) {
 
 .message,
 .error-message,
+.success-message,
 .empty-box {
   padding: 1rem;
   border-radius: 12px;
@@ -544,7 +558,8 @@ function openQuiz(quiz) {
 }
 
 .message,
-.empty-box {
+.empty-box,
+.success-message {
   background: #f7f7fb;
   color: #05051f;
 }
