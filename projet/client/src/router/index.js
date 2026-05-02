@@ -7,7 +7,8 @@
   import HomePage_Admin from '../views/HomePage_Admin.vue'
   import CoursePage from '../views/CoursePage.vue'
   import QuizPage from '../views/QuizPage.vue'
-
+  import AboutProject from '../views/AboutProjectPage.vue'
+  import AboutTeam from '../views/AboutTeamPage.vue'
   function getCurrentUser() {
   try {
     const user = localStorage.getItem('user')
@@ -64,7 +65,17 @@
     name: 'quiz-detail',
     component: QuizPage,
     meta: { requiresAuth: true },
-    }
+    },
+    {
+      path: '/about-project',
+      name: 'about-project',
+      component: AboutProject,
+    },
+    {
+      path: '/about-team',
+      name: 'about-team',
+      component: AboutTeam,
+    },
     ]
   })
 

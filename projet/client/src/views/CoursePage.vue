@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Header from '../components/PageHeader.vue'
 import Footer from '../components/PageFooter.vue'
@@ -14,15 +14,14 @@ const course = ref(null)
 const modules = ref([])
 const quizzes = ref([])
 
-
 const courseForm = ref({ title: '', short_description: '' })
-const moduleForm = ref({ title: '', description: '' }) 
-const quizForm = ref({ 
-  module_id: '', 
-  title: '', 
-  description: '', 
+const moduleForm = ref({ title: '', description: '' })
+const quizForm = ref({
+  module_id: '',
+  title: '',
+  description: '',
   type: 'practice',
-  duration: 30 
+  duration: 30,
 })
 
 const quizError = ref('')
@@ -59,32 +58,40 @@ async function fetchCourseData() {
     modules.value = Array.isArray(modulesData) ? modulesData : []
 
     const allQuizzes = []
-for (const mod of modules.value) {
-  try {
-    const qResp = await fetch(`http://localhost:3000/api/quizzes/module/${mod.module_id}`)
-    if (qResp.ok) {
-      const qData = await qResp.json()
-      
-      const enrichedQuizzes = await Promise.all(qData.map(async (quiz) => {
-  const attResp = await fetch(`http://localhost:3000/api/attempts/student/${user.value.user_id}/quiz/${quiz.quiz_id}`)
-  const attData = attResp.ok ? await attResp.json() : []
-  
-  const quesRes = await fetch(`http://localhost:3000/api/questions/quiz/${quiz.quiz_id}`)
-  const quesData = await quesRes.json()
-  
-  const totalMaxPoints = quesData.reduce((sum, q) => sum + (Number(q.points) || 0), 0)
+    for (const mod of modules.value) {
+      try {
+        const qResp = await fetch(`http://localhost:3000/api/quizzes/module/${mod.module_id}`)
+        if (qResp.ok) {
+          const qData = await qResp.json()
 
-  return {
-    ...quiz,
-    module_title: mod.title,
-    last_attempt: attData.length > 0 ? attData[0] : null,
-    max_points_possible: totalMaxPoints 
-  }
-}))
-      allQuizzes.push(...enrichedQuizzes)
+          const enrichedQuizzes = await Promise.all(
+            qData.map(async (quiz) => {
+              const attResp = await fetch(
+                `http://localhost:3000/api/attempts/student/${user.value.user_id}/quiz/${quiz.quiz_id}`,
+              )
+              const attData = attResp.ok ? await attResp.json() : []
+
+              const quesRes = await fetch(
+                `http://localhost:3000/api/questions/quiz/${quiz.quiz_id}`,
+              )
+              const quesData = await quesRes.json()
+
+              const totalMaxPoints = quesData.reduce((sum, q) => sum + (Number(q.points) || 0), 0)
+
+              return {
+                ...quiz,
+                module_title: mod.title,
+                last_attempt: attData.length > 0 ? attData[0] : null,
+                max_points_possible: totalMaxPoints,
+              }
+            }),
+          )
+          allQuizzes.push(...enrichedQuizzes)
+        }
+      } catch (e) {
+        console.error('Skip module quizzes fetch error', e)
+      }
     }
-  } catch (e) { console.error("Skip module quizzes fetch error", e) }
-}
     quizzes.value = allQuizzes
   } catch (err) {
     error.value = err.message
@@ -102,24 +109,25 @@ async function createModule() {
       body: JSON.stringify({
         course_id: course.value.course_id,
         title: moduleForm.value.title,
-        description: moduleForm.value.description
-      })
+        description: moduleForm.value.description,
+      }),
     })
     if (response.ok) {
-      moduleMessage.value = "Module created!"
+      moduleMessage.value = 'Module created!'
       moduleForm.value = { title: '', description: '' }
       await fetchCourseData()
     }
-  } catch{ error.value = "Failed to create module" }
+  } catch {
+    error.value = 'Failed to create module'
+  }
 }
-
 
 async function createQuiz() {
   if (!quizForm.value.module_id || !quizForm.value.title.trim()) {
     quizError.value = 'Please select a module and title.'
     return
   }
-  
+
   try {
     const response = await fetch('http://localhost:3000/api/quizzes', {
       method: 'POST',
@@ -135,33 +143,32 @@ async function createQuiz() {
     })
 
     if (!response.ok) throw new Error('Creation failed')
-    
+
     const newQuizFromServer = await response.json()
-    const selectedModule = modules.value.find(m => m.module_id === quizForm.value.module_id)
-    
+    const selectedModule = modules.value.find((m) => m.module_id === quizForm.value.module_id)
+
     const quickQuiz = {
       ...newQuizFromServer,
       quiz_id: newQuizFromServer.quiz_id || newQuizFromServer.id,
       module_title: selectedModule ? selectedModule.title : 'N/A',
-      last_attempt: null
+      last_attempt: null,
     }
-    
+
     quizzes.value.push(quickQuiz)
-    
+
     quizMessage.value = 'Quiz created successfully.'
     quizError.value = ''
-    quizForm.value = { 
-      module_id: '', 
-      title: '', 
-      description: '', 
-      type: 'practice', 
-      duration: 30 
+    quizForm.value = {
+      module_id: '',
+      title: '',
+      description: '',
+      type: 'practice',
+      duration: 30,
     }
 
     await fetchCourseData()
-    
-  } catch (err) { 
-    quizError.value = err.message 
+  } catch (err) {
+    quizError.value = err.message
   }
 }
 async function updateCourse() {
@@ -169,38 +176,45 @@ async function updateCourse() {
     const response = await fetch(`http://localhost:3000/api/courses/${course.value.course_id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(courseForm.value)
+      body: JSON.stringify(courseForm.value),
     })
     if (response.ok) {
       courseMessage.value = 'Course updated successfully.'
       await fetchCourseData()
     }
-  } catch (err) { error.value = err.message }
+  } catch (err) {
+    error.value = err.message
+  }
 }
 
-
-function goBack() { router.push(user.value?.role === 'teacher' ? '/teacher' : '/student') }
-function openQuiz(quiz) { router.push(`/quizzes/${quiz.quiz_id || quiz.id}`) }
+function goBack() {
+  router.push(user.value?.role === 'teacher' ? '/teacher' : '/student')
+}
+function openQuiz(quiz) {
+  router.push(`/quizzes/${quiz.quiz_id || quiz.id}`)
+}
 
 async function deleteQuiz(quizId) {
-  if (!confirm("Are you sure you want to delete this quiz definitively")) {
+  if (!confirm('Are you sure you want to delete this quiz definitively')) {
     return
   }
 
   try {
     const response = await fetch(`http://localhost:3000/api/quizzes/${quizId}`, {
-      method: 'DELETE'
+      method: 'DELETE',
     })
 
     if (response.ok) {
-      quizzes.value = quizzes.value.filter(q => (q.quiz_id || q.id) !== quizId)
-      quizMessage.value = "Quiz deleted successfully."
-      setTimeout(() => { quizMessage.value = '' }, 3000)
+      quizzes.value = quizzes.value.filter((q) => (q.quiz_id || q.id) !== quizId)
+      quizMessage.value = 'Quiz deleted successfully.'
+      setTimeout(() => {
+        quizMessage.value = ''
+      }, 3000)
     } else {
       throw new Error('Failed to delete quiz')
     }
   } catch (err) {
-    quizError.value = "Error: " + err.message
+    quizError.value = 'Error: ' + err.message
   }
 }
 </script>
@@ -224,10 +238,8 @@ async function deleteQuiz(quizId) {
             <span>MCQs: {{ quizzes.length }}</span>
           </div>
 
-
           <div v-if="isTeacher" class="teacher-course-panel">
             <h2>Teacher controls</h2>
-            
 
             <div class="admin-card">
               <h3>Edit Course Info</h3>
@@ -249,59 +261,69 @@ async function deleteQuiz(quizId) {
               <div v-if="moduleMessage" class="success-message">{{ moduleMessage }}</div>
               <div class="form-group">
                 <label>Module Title</label>
-                <input v-model="moduleForm.title" type="text" placeholder="ex: Introduction to Algebra" />
+                <input
+                  v-model="moduleForm.title"
+                  type="text"
+                  placeholder="ex: Introduction to Algebra"
+                />
               </div>
               <button class="primary-button" @click="createModule">Add Module</button>
             </div>
-<div class="admin-card quiz-creation">
-  <h3>2. Create a New Quiz</h3>
-  
-  <div v-if="quizError" class="error-message">{{ quizError }}</div>
-  <div v-if="quizMessage" class="success-message">{{ quizMessage }}</div>
-  
-  <div v-if="modules.length === 0" class="empty-box">
-    Create a module above before adding quizzes.
-  </div>
+            <div class="admin-card quiz-creation">
+              <h3>2. Create a New Quiz</h3>
 
-  <div v-else>
-    <div class="form-row"> 
-      <div class="form-group">
-        <label>Select Module</label>
-        <select v-model="quizForm.module_id">
-          <option value="" disabled>Select a module</option>
-          <option v-for="m in modules" :key="m.module_id" :value="m.module_id">{{ m.title }}</option>
-        </select>
-      </div>
+              <div v-if="quizError" class="error-message">{{ quizError }}</div>
+              <div v-if="quizMessage" class="success-message">{{ quizMessage }}</div>
 
-      <div class="form-group">
-        <label>Quiz Title</label>
-        <input v-model="quizForm.title" type="text" placeholder="Quiz name..." />
-      </div>
-    </div>
-    <div class="form-group">
-  <label>Description</label>
-  <input v-model="quizForm.description" type="text" placeholder="Optional description..." />
-</div>
+              <div v-if="modules.length === 0" class="empty-box">
+                Create a module above before adding quizzes.
+              </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label>Type</label>
-        <select v-model="quizForm.type">
-          <option value="practice">Practice</option>
-          <option value="exam">Exam</option>
-        </select>
-      </div>
+              <div v-else>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Select Module</label>
+                    <select v-model="quizForm.module_id">
+                      <option value="" disabled>Select a module</option>
+                      <option v-for="m in modules" :key="m.module_id" :value="m.module_id">
+                        {{ m.title }}
+                      </option>
+                    </select>
+                  </div>
 
-      <div class="form-group">
-        <label>Duration (minutes)</label>
-        <div class="input-with-unit">
-          <input v-model.number="quizForm.duration" type="number" min="1" />
-        </div>
-      </div>
-    </div>
-    <button class="primary-button" @click="createQuiz">Create Quiz</button>
-  </div>
-</div>
+                  <div class="form-group">
+                    <label>Quiz Title</label>
+                    <input v-model="quizForm.title" type="text" placeholder="Quiz name..." />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Description</label>
+                  <input
+                    v-model="quizForm.description"
+                    type="text"
+                    placeholder="Optional description..."
+                  />
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Type</label>
+                    <select v-model="quizForm.type">
+                      <option value="practice">Practice</option>
+                      <option value="exam">Exam</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Duration (minutes)</label>
+                    <div class="input-with-unit">
+                      <input v-model.number="quizForm.duration" type="number" min="1" />
+                    </div>
+                  </div>
+                </div>
+                <button class="primary-button" @click="createQuiz">Create Quiz</button>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -315,31 +337,31 @@ async function deleteQuiz(quizId) {
                 <small class="module-badge">{{ quiz.module_title }}</small>
               </div>
               <div class="quiz-actions">
-                <button 
-                  v-if="isTeacher" 
-                  class="delete-button" 
+                <button
+                  v-if="isTeacher"
+                  class="delete-button"
                   @click.stop="deleteQuiz(quiz.quiz_id || quiz.id)"
                   title="Delete Quiz"
                 >
                   delete
                 </button>
-                <button 
-                  v-if="isTeacher || quiz.type === 'practice' || !quiz.last_attempt" 
+                <button
+                  v-if="isTeacher || quiz.type === 'practice' || !quiz.last_attempt"
                   @click="openQuiz(quiz)"
                 >
-                  {{ (quiz.type === 'practice' && quiz.last_attempt) ? 'Try Again' : 'Open' }}
+                  {{ quiz.type === 'practice' && quiz.last_attempt ? 'Try Again' : 'Open' }}
                 </button>
 
-               
                 <span v-if="quiz.last_attempt" class="score-badge">
-                  Score: {{ 
-                    quiz.max_points_possible > 0 
-                    ? ((quiz.last_attempt.score / quiz.max_points_possible) * 20).toFixed(2) 
-                    : '0.00' 
-                  }} / 20
+                  Score:
+                  {{
+                    quiz.max_points_possible > 0
+                      ? ((quiz.last_attempt.score / quiz.max_points_possible) * 20).toFixed(2)
+                      : '0.00'
+                  }}
+                  / 20
                 </span>
               </div>
-  
             </li>
           </ul>
         </section>
@@ -349,16 +371,19 @@ async function deleteQuiz(quizId) {
   </div>
 </template>
 
-
 <style scoped>
-  /* variables and resets */
+/* variables and resets */
 :deep(body) {
   background-color: #f1f5f9;
 }
 
 .course-page {
   min-height: 100vh;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    sans-serif;
   color: #1e293b;
   line-height: 1.5;
 }
@@ -434,15 +459,20 @@ async function deleteQuiz(quizId) {
   border-radius: 32px;
   border: 1px solid rgba(226, 232, 240, 0.8);
   margin-bottom: 48px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.03), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.03),
+    0 10px 10px -5px rgba(0, 0, 0, 0.01);
   position: relative;
   overflow: hidden;
 }
 
 .course-info::before {
-  content: "";
+  content: '';
   position: absolute;
-  top: 0; left: 0; right: 0; height: 6px;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
   background: linear-gradient(90deg, #4f46e5, #06b6d4);
 }
 
@@ -517,8 +547,8 @@ async function deleteQuiz(quizId) {
   margin-bottom: 6px;
 }
 
-.form-group input, 
-.form-group textarea, 
+.form-group input,
+.form-group textarea,
 .form-group select {
   width: 100%;
   padding: 12px 16px;
@@ -529,7 +559,8 @@ async function deleteQuiz(quizId) {
   transition: all 0.2s;
 }
 
-.form-group input:focus, .form-group select:focus {
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
@@ -627,8 +658,14 @@ async function deleteQuiz(quizId) {
 
 /* animation */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .quiz-item {
@@ -636,7 +673,7 @@ async function deleteQuiz(quizId) {
 }
 
 .score-badge {
-  background: #e0f2fe; 
+  background: #e0f2fe;
   color: #0369a1;
   padding: 8px 14px;
   border-radius: 10px;
@@ -751,8 +788,8 @@ async function deleteQuiz(quizId) {
     margin-bottom: 4px;
   }
 
-  .form-group input, 
-  .form-group textarea, 
+  .form-group input,
+  .form-group textarea,
   .form-group select {
     padding: 10px 12px;
     font-size: 16px;

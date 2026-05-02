@@ -17,18 +17,35 @@ const props = defineProps({
 const router = useRouter()
 const menuOpen = ref(false)
 
+function getConnectedUser() {
+  if (props.user) {
+    return props.user
+  }
+
+  const storedUser = localStorage.getItem('user')
+
+  if (!storedUser) {
+    return null
+  }
+
+  return JSON.parse(storedUser)
+}
+
 function goHome() {
   menuOpen.value = false
-  if (!props.user) {
+
+  const connectedUser = getConnectedUser()
+
+  if (!connectedUser) {
     router.push('/')
     return
   }
 
-  if (props.user.role === 'student') {
+  if (connectedUser.role === 'student') {
     router.push('/student')
-  } else if (props.user.role === 'teacher') {
+  } else if (connectedUser.role === 'teacher') {
     router.push('/teacher')
-  } else if (props.user.role === 'admin') {
+  } else if (connectedUser.role === 'admin') {
     router.push('/admin')
   } else {
     router.push('/')
@@ -60,9 +77,8 @@ function toggleMenu() {
 
     <nav :class="{ active: menuOpen }" class="nav-menu">
       <a href="#" @click.prevent="goHome">Home</a>
-      <a href="#">About the Project</a>
-      <a href="#">About our Team</a>
-      <a href="#">Contacts</a>
+      <RouterLink to="/about-project">About the Project</RouterLink>
+      <RouterLink to="/about-team">About our Team</RouterLink>
     </nav>
 
     <div class="nav-actions">
@@ -74,7 +90,11 @@ function toggleMenu() {
       <button v-else class="login-button" @click="goToLogin">Login</button>
     </div>
 
-    <button class="menu-toggle" @click="toggleMenu" :aria-label="menuOpen ? 'Close menu' : 'Open menu'">
+    <button
+      class="menu-toggle"
+      @click="toggleMenu"
+      :aria-label="menuOpen ? 'Close menu' : 'Open menu'"
+    >
       <span></span>
       <span></span>
       <span></span>

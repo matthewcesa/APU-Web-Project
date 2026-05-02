@@ -3,23 +3,21 @@
     <div class="footer-content">
       <div>
         <h3>Navigation</h3>
-        <p>Home</p>
-        <p>All Courses</p>
-        <p>About</p>
-        <p>Help</p>
+        <p><RouterLink to="/about-project">About the Project</RouterLink></p>
+        <p><RouterLink to="/about-team">About our Team</RouterLink></p>
       </div>
 
       <div>
         <h3>Resources</h3>
-        <p>Documentation</p>
-        <p>Technical Support</p>
-        <p>Privacy Policy</p>
-        <p>Terms of Service</p>
+        <p>Nothing</p>
+        <p>To</p>
+        <p>Click on</p>
+        <p>Here</p>
       </div>
 
       <div>
         <h3>Contact</h3>
-        <p>Address : Somewhere over the rainbow <br /></p>
+        <p>Address : M Vertica for now !<br /></p>
         <p>+00 11 22 33 44 55</p>
         <p>contact@mcqoodle.com</p>
       </div>
