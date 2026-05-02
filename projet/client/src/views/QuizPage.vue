@@ -142,13 +142,19 @@ function resetAnswers() {
   answers.value = empty
 }
 
-// --- ACTIONS ET SOUMISSION ---
 async function submitQuiz() {
   stopTimer()
-  score.value = questions.value.reduce((sum, q) => sum + getQuestionScore(q), 0)
+  
+  let calculatedScore = 0 
+  questions.value.forEach(q => {
+  
+    const questionScore = Number(getQuestionScore(q))
+    calculatedScore += questionScore 
+  })
+  
+  score.value = calculatedScore
   total.value = getTotalPoints()
   submitted.value = true
-
   try {
     const attemptId = await saveAttempt()
     for (const q of questions.value) {
@@ -252,13 +258,17 @@ function getQuestionScore(q) {
   const ans = answers.value[q.question_id]
   if (isMultipleChoice(q)) {
     const correctIds = q.options.filter(o => isCorrect(o.is_correct)).map(o => o.option_id)
-    return (ans.length === correctIds.length && ans.every(id => correctIds.includes(id))) ? q.points : 0
+    const isCorrectChoice = (ans.length === correctIds.length && ans.every(id => correctIds.includes(id)))
+    return isCorrectChoice ? Number(q.points) : 0
   }
   const opt = q.options.find(o => o.option_id === ans)
-  return opt && isCorrect(opt.is_correct) ? q.points : 0
+  return opt && isCorrect(opt.is_correct) ? Number(q.points) : 0
 }
+
 function goBack() { router.back() }
+
 function addOptionField() { newQuestion.value.options.push({ option_text: '', is_correct: false }) }
+
 function removeOptionField(i) { newQuestion.value.options.splice(i, 1) }
 
 // --- WATCHERS ---
@@ -397,7 +407,8 @@ onUnmounted(stopTimer)
     </main>
     <AppFooter />
   </div>
-</template><style scoped>
+</template>
+<style scoped>
 /* --- MISE EN PAGE GLOBALE --- */
 .quiz-page {
   background-color: #f4f7f6;
