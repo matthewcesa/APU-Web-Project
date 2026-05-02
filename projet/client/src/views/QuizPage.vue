@@ -135,13 +135,20 @@ async function loadLastAttempt() {
   try {
     const res = await fetch(`http://localhost:3000/api/attempts/student/${user.value.user_id}/quiz/${route.params.id}`)
     const data = await res.json()
+    
     if (data && data.length > 0) {
       const last = data[0]
       lastAttemptId.value = last.attempt_id
       score.value = Number(last.score || 0)
       total.value = getTotalPoints()
-      submitted.value = true
-      if (isExam()) examAlreadySubmitted.value = true
+      if (quiz.value?.type === 'exam' || quiz.value?.max_attempts === 1) {
+        submitted.value = true
+        examAlreadySubmitted.value = true
+        stopTimer()
+      } else {
+        submitted.value = true 
+        examAlreadySubmitted.value = false 
+      }
     }
   } catch (e) { console.error(e) }
 }
@@ -216,13 +223,13 @@ async function saveQuestionAnswers(attemptId, question) {
 
 function restartQuiz() {
   stopTimer()
-  resetAnswers()
-  submitted.value = false
+  resetAnswers() 
+  submitted.value = false 
+  examAlreadySubmitted.value = false 
   score.value = 0
   lastAttemptId.value = null
-  startTimer()
+  startTimer() 
 }
-
 async function saveQuestion() {
   try {
     const qRes = await fetch('http://localhost:3000/api/questions', {
@@ -366,10 +373,10 @@ onUnmounted(stopTimer)
           </div>
           <hr class="separator" />
         </section>
-        <section v-if="!examAlreadySubmitted" class="questions">
+<section v-if="!examAlreadySubmitted || quiz?.type === 'practice'" class="questions">
           <div v-if="timeLeft !== null && !submitted && user.role === 'student'" 
                class="timer-bar" :class="{ 'timer-low': timeLeft < 60 }">
-            ⏱️ Remaining: {{ formattedTime }}
+            Remaining: {{ formattedTime }}
           </div>
 
           <form @submit.prevent="submitQuiz">

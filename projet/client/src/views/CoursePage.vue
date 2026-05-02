@@ -323,8 +323,15 @@ async function deleteQuiz(quizId) {
                 >
                   delete
                 </button>
-                <button v-if="isTeacher || !quiz.last_attempt" @click="openQuiz(quiz)">Open</button>
-                <span v-else-if="quiz.last_attempt" class="score-badge">
+                <button 
+                  v-if="isTeacher || quiz.type === 'practice' || !quiz.last_attempt" 
+                  @click="openQuiz(quiz)"
+                >
+                  {{ (quiz.type === 'practice' && quiz.last_attempt) ? 'Try Again' : 'Open' }}
+                </button>
+
+               
+                <span v-if="quiz.last_attempt" class="score-badge">
                   Score: {{ 
                     quiz.max_points_possible > 0 
                     ? ((quiz.last_attempt.score / quiz.max_points_possible) * 20).toFixed(2) 
