@@ -301,7 +301,7 @@ onUnmounted(stopTimer)
           <div class="quiz-settings-panel">
         
 <div class="quiz-settings-panel">
-  <h3>⚙️ Quiz Configuration</h3>
+  <h3>Quiz Configuration</h3>
   <div class="settings-grid">
     <div class="setting-item full-width">
       <label>Quiz Title</label>
