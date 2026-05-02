@@ -40,6 +40,7 @@ onMounted(async () => {
   await fetchCourseData()
 })
 
+
 async function fetchCourseData() {
   loading.value = true
   error.value = ''
