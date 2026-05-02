@@ -82,6 +82,7 @@ exports.createUser = (req, res) => {
   });
 };
 
+//Unused because I couldnt make it work on the admin page :(
 exports.updateUser = (req, res) => {
   users.update(req.params.id, req.body, (err, results) => {
     if (err) {
