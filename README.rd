@@ -160,13 +160,6 @@ Teacher behavior:
 
 ---
 
-## Notes / Limitations (as implemented today)
-- Access control is enforced mainly on the frontend.
-- API URLs are hardcoded in the frontend to `http://localhost:3000`.
-- Some delete behaviors exist in UI (course/quizzes), but not all entities are exposed in the current UI.
-
----
-
 ## References (within the repo)
 - DB schema: `database_learning_platform.sql`
 - DB dictionary: `documents/data_dictionary.rd`
