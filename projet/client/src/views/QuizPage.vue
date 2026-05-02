@@ -40,11 +40,25 @@ const newQuestion = ref({
   ]
 })
 
-// --- LOGIQUE CORE ---
+watch(() => quiz.value?.max_attempts, (newAttempts) => {
+  if (!quiz.value) return
+
+  if (newAttempts > 1 && quiz.value.type === 'exam') {
+    quiz.value.type = 'practice'
+  } else if (newAttempts === 1 && quiz.value.type === 'practice') {
+    quiz.value.type = 'exam'
+  }
+})
+
+watch(() => quiz.value?.type, (newType) => {
+  if (newType === 'exam' && quiz.value.max_attempts > 1) {
+    quiz.value.max_attempts = 1
+  }
+})
+
 function isCorrect(value) { return value === true || value === 1 || value === 'true' }
 const isMultipleChoice = (q) => q.question_type === 'multiple_choice'
 function isExam() { return quiz.value?.type === 'exam' }
-function isPractice() { return quiz.value?.type === 'practice' || !isExam() }
 
 const scoreOutOf20 = computed(() => {
   if (total.value === 0) return "0.00"
@@ -58,7 +72,6 @@ const formattedTime = computed(() => {
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`
 })
 
-// --- GESTION DU TIMER ---
 function startTimer() {
   if (timerInterval.value) stopTimer()
   if (quiz.value?.time_limit_minutes) {
@@ -87,7 +100,6 @@ async function autoSubmit() {
   await submitQuiz()
 }
 
-// --- CHARGEMENT DES DONNÉES ---
 async function loadQuiz() {
   loading.value = true
   error.value = ''
@@ -112,7 +124,7 @@ async function loadQuiz() {
       await loadLastAttempt()
       if (!submitted.value) startTimer()
     }
-  } catch (err) {
+  } catch {
     error.value = "Error loading quiz"
   } finally {
     loading.value = false
@@ -141,7 +153,24 @@ function resetAnswers() {
   })
   answers.value = empty
 }
-
+async function updateQuizSettings() {
+  try {
+    await fetch(`http://localhost:3000/api/quizzes/${route.params.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        title: quiz.value.title, 
+        description: quiz.value.description, 
+        time_limit_minutes: quiz.value.time_limit_minutes,
+        max_attempts: quiz.value.max_attempts,
+        type: quiz.value.type 
+      })
+    })
+    alert("Settings updated!")
+  } catch  { 
+    alert("Error updating settings") 
+  }
+}
 async function submitQuiz() {
   stopTimer()
   
@@ -194,23 +223,6 @@ function restartQuiz() {
   startTimer()
 }
 
-// --- GESTION PROFESSEUR ---
-async function updateQuizSettings() {
-  try {
-    await fetch(`http://localhost:3000/api/quizzes/${route.params.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        title: quiz.value.title, 
-        description: quiz.value.description, 
-        time_limit_minutes: quiz.value.time_limit_minutes,
-        max_attempts: quiz.value.max_attempts 
-      })
-    })
-    alert("Settings updated!")
-  } catch (err) { alert("Error updating settings") }
-}
-
 async function saveQuestion() {
   try {
     const qRes = await fetch('http://localhost:3000/api/questions', {
@@ -230,7 +242,7 @@ async function saveQuestion() {
     }
     await loadQuiz()
     isEditing.value = false
-  } catch (e) { alert("Error saving question") }
+  } catch { alert("Error saving question") }
 }
 
 function startEdit(q) {
@@ -249,10 +261,8 @@ async function updateQuestion() {
     })
     editingQuestionId.value = null
     await loadQuiz()
-  } catch (e) { alert("Error updating question") }
+  } catch { alert("Error updating question") }
 }
-
-// --- HELPERS ---
 function getTotalPoints() { return questions.value.reduce((s, q) => s + Number(q.points || 1), 0) }
 function getQuestionScore(q) {
   const ans = answers.value[q.question_id]
@@ -271,7 +281,6 @@ function addOptionField() { newQuestion.value.options.push({ option_text: '', is
 
 function removeOptionField(i) { newQuestion.value.options.splice(i, 1) }
 
-// --- WATCHERS ---
 watch(() => newQuestion.value.options, (opts) => {
   const count = opts.filter(o => o.is_correct).length
   newQuestion.value.question_type = count > 1 ? 'multiple_choice' : 'single_choice'
@@ -288,28 +297,41 @@ onUnmounted(stopTimer)
       <button class="back-button" @click="goBack">← Back</button>
 
       <template v-if="!loading && quiz">
-        <!-- HEADER PROF : REGLAGES + BOUTON AJOUT -->
         <section v-if="user?.role === 'teacher'" class="teacher-controls">
           <div class="quiz-settings-panel">
-            <h3>⚙️ Quiz Configuration</h3>
-            <div class="settings-grid">
-              <div class="setting-item">
-                <label>Time (min)</label>
-                <input type="number" v-model.number="quiz.time_limit_minutes" />
-              </div>
-              <div class="setting-item">
-                <label>Max Attempts</label>
-                <input type="number" v-model.number="quiz.max_attempts" />
-              </div>
-              <button @click="updateQuizSettings" class="btn-save-settings">💾 Save Settings</button>
-            </div>
+        
+<div class="quiz-settings-panel">
+  <h3>Quiz Configuration</h3>
+  <div class="settings-grid">
+    <div class="setting-item full-width">
+      <label>Quiz Title</label>
+      <input type="text" v-model="quiz.title" class="edit-input-main" />
+    </div>
+    
+    <div class="setting-item full-width">
+      <label>Description</label>
+      <textarea v-model="quiz.description" class="edit-input-main" rows="2"></textarea>
+    </div>
+
+    <div class="setting-item">
+      <label>Time (min)</label>
+      <input type="number" v-model.number="quiz.time_limit_minutes" />
+    </div>
+    
+    <div class="setting-item">
+      <label>Max Attempts</label>
+      <input type="number" v-model.number="quiz.max_attempts" />
+    </div>
+    
+    <button @click="updateQuizSettings" class="btn-save-settings">💾 Save Changes</button>
+  </div>
+</div>
           </div>
 
           <button @click="isEditing = !isEditing" class="add-btn">
             {{ isEditing ? '✖ Cancel' : '➕ Add New Question' }}
           </button>
 
-          <!-- LE FORMULAIRE QUI MANQUAIT -->
           <div v-if="isEditing" class="form-card">
             <h3>Create a New Question</h3>
             <div class="form-group">
@@ -344,8 +366,6 @@ onUnmounted(stopTimer)
           </div>
           <hr class="separator" />
         </section>
-
-        <!-- QUESTIONS & TIMER POUR ETUDIANTS -->
         <section v-if="!examAlreadySubmitted" class="questions">
           <div v-if="timeLeft !== null && !submitted && user.role === 'student'" 
                class="timer-bar" :class="{ 'timer-low': timeLeft < 60 }">
@@ -355,7 +375,6 @@ onUnmounted(stopTimer)
           <form @submit.prevent="submitQuiz">
             <div v-for="(q, idx) in questions" :key="q.question_id" class="question-box">
               
-              <!-- MODE ÉDITION D'UNE QUESTION EXISTANTE -->
               <div v-if="editingQuestionId === q.question_id" class="edit-mode-active">
                 <div class="form-group">
                   <label>Edit Question Text:</label>
@@ -368,16 +387,14 @@ onUnmounted(stopTimer)
                   </div>
                 </div>
                 <div class="edit-actions">
-                  <button @click="updateQuestion" type="button" class="btn-save-edit">✅ Save</button>
+                  <button @click="updateQuestion" type="button" class="btn-save-edit">Save</button>
                   <button @click="cancelEdit" type="button" class="btn-cancel-edit">✖ Cancel</button>
                 </div>
               </div>
-
-              <!-- AFFICHAGE NORMAL -->
               <div v-else>
                 <div class="question-header">
                   <h3>Question {{ idx + 1 }}</h3>
-                  <button v-if="user.role === 'teacher'" @click="startEdit(q)" type="button" class="btn-small-edit">✏️ Edit</button>
+                  <button v-if="user.role === 'teacher'" @click="startEdit(q)" type="button" class="btn-small-edit">Edit</button>
                 </div>
                 <p class="question-text">{{ q.question_text }}</p>
                 <div class="options-list">
@@ -409,214 +426,559 @@ onUnmounted(stopTimer)
   </div>
 </template>
 <style scoped>
-/* --- MISE EN PAGE GLOBALE --- */
 .quiz-page {
-  background-color: #f4f7f6;
+  background-color: #f8fafc;
   min-height: 100vh;
-  padding-bottom: 50px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #1e293b;
 }
 
 .content {
-  max-width: 900px;
+  max-width: 850px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 40px 20px;
 }
 
-/* --- BOUTON RETOUR --- */
 .back-button {
-  background: none;
-  border: none;
-  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: #64748b;
   font-weight: 600;
   cursor: pointer;
-  margin-bottom: 20px;
-  transition: color 0.3s;
-}
-.back-button:hover { color: #05051f; }
-
-/* --- TIMER STICKY (Le truc qui flash) --- */
-.timer-bar {
-  position: sticky;
-  top: 20px;
-  z-index: 1000;
-  background: #05051f;
-  color: white;
-  padding: 15px 25px;
-  border-radius: 50px;
-  text-align: center;
-  font-weight: 800;
-  font-size: 1.2rem;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-  margin-bottom: 30px;
-  border: 2px solid #3e3e5e;
+  transition: all 0.2s;
+  margin-bottom: 24px;
 }
 
-.timer-low {
-  background: #e74c3c;
-  border-color: #ff7675;
-  animation: pulse 1s infinite;
+.back-button:hover {
+  color: #0f172a;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-  100% { transform: scale(1); }
-}
-
-/* --- PANNEAU PROF (Settings) --- */
-.quiz-settings-panel {
-  background: white;
-  padding: 25px;
+.teacher-controls {
+  background: #ffffff;
   border-radius: 16px;
-  border: 1px solid #e0e0e0;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  margin-bottom: 30px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 32px;
+}
+
+.quiz-settings-panel h3 {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  color: #0f172a;
 }
 
 .settings-grid {
-  display: flex;
-  gap: 20px;
-  align-items: flex-end;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  align-items: end;
 }
 
 .setting-item label {
   display: block;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  color: #888;
-  margin-bottom: 8px;
+  font-size: 0.75rem;
   font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 6px;
 }
 
 .setting-item input {
+  width: 100%;
   padding: 10px;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  border: 1px solid #ddd;
-  width: 100px;
-  font-weight: bold;
+  font-weight: 600;
 }
 
-/* --- FORMULAIRE D'AJOUT DE QUESTION --- */
-.form-card {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 16px;
-  border: 2px solid #05051f;
-  margin-bottom: 30px;
+.btn-save-settings {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.edit-opt-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
+.btn-save-settings:hover { background: #4338ca; }
+
+.add-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background: #f1f5f9;
+  border: 2px dashed #cbd5e1;
+  color: #475569;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.edit-opt-row input[type="text"] {
-  flex: 1;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
+.add-btn:hover { background: #e2e8f0; border-color: #94a3b8; }
+
+.timer-bar {
+  position: sticky;
+  top: 20px;
+  z-index: 100;
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 12px 24px;
+  border-radius: 99px;
+  width: fit-content;
+  margin: 0 auto 30px;
+  font-weight: 700;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 2px solid #334155;
 }
 
-/* --- QUESTIONS --- */
+.timer-low {
+  background: #ef4444;
+  border-color: #f87171;
+  animation: pulse 1s infinite;
+}
+
 .question-box {
   background: white;
-  padding: 25px;
   border-radius: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-  border: 1px solid #eee;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s;
 }
 
-.question-header {
-  display: flex;
-  justify-content: space-between;
-  border-bottom: 1px solid #f0f0f0;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
+.question-header h3 {
+  font-size: 0.9rem;
+  color: #6366f1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .question-text {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 20px;
+  margin: 16px 0 24px;
+  line-height: 1.5;
 }
 
-/* --- OPTIONS --- */
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .option {
   display: flex;
   align-items: center;
-  padding: 15px;
-  border: 1px solid #eee;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .option:hover:not(.disabled) {
-  background-color: #f8f9ff;
-  border-color: #05051f;
+  border-color: #6366f1;
+  background: #f5f3ff;
 }
 
-.option input { margin-right: 15px; transform: scale(1.2); }
+.option input {
+  width: 18px;
+  height: 18px;
+  margin-right: 14px;
+  accent-color: #6366f1;
+}
 
-/* --- COULEURS DE RESULTATS --- */
 .option.correct {
-  background-color: #d1f2eb;
-  border-color: #1abc9c;
-  color: #0e6251;
+  background: #f0fdf4;
+  border-color: #22c55e;
+  color: #166534;
 }
 
-/* --- BOUTONS --- */
-.add-btn {
-  background: #00b894;
+.form-card {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+.result-box {
+  background: #0f172a;
   color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 700;
-  cursor: pointer;
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.big-score {
+  font-size: 3.5rem;
+  font-weight: 800;
+  display: block;
+  color: #818cf8;
 }
 
 .submit-button {
   width: 100%;
-  padding: 18px;
-  background: #05051f;
+  padding: 16px;
+  background: #6366f1;
   color: white;
+  border: none;
   border-radius: 12px;
   font-size: 1.1rem;
   font-weight: 700;
-  border: none;
   cursor: pointer;
-  margin-top: 20px;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
 }
 
-.btn-save-settings {
-  background: #05051f;
-  color: white;
-  padding: 10px 20px;
+@keyframes pulse {
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.edit-input-main {
+  width: 100%;
+  padding: 10px;
   border-radius: 8px;
-  border: none;
-  cursor: pointer;
+  border: 1px solid #e2e8f0;
+  font-family: inherit;
+  font-size: 1rem;
 }
 
-/* --- BOX DE FIN --- */
-.result-box {
-  text-align: center;
-  padding: 40px;
-  background: white;
-  border-radius: 20px;
-  margin-top: 30px;
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
 }
 
-.big-score {
-  font-size: 4rem;
-  font-weight: 900;
-  color: #05051f;
+/* Tablet */
+@media (max-width: 1024px) {
+  .content {
+    padding: 32px 16px;
+    max-width: 100%;
+  }
+
+  .settings-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .teacher-controls {
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .question-box {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .result-box {
+    padding: 32px 20px;
+  }
+
+  .big-score {
+    font-size: 2.5rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .content {
+    max-width: 100%;
+    padding: 20px 12px;
+  }
+
+  .back-button {
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+  }
+
+  .teacher-controls {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .quiz-settings-panel h3 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .setting-item input {
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  .btn-save-settings {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .add-btn {
+    margin-top: 12px;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .timer-bar {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    margin: 0 auto 20px;
+  }
+
+  .question-box {
+    background: white;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .question-header h3 {
+    font-size: 0.85rem;
+  }
+
+  .btn-small-edit {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .question-text {
+    font-size: 1rem;
+    margin: 12px 0 16px;
+  }
+
+  .options-list {
+    gap: 8px;
+  }
+
+  .option {
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+
+  .option input {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+  }
+
+  .form-card {
+    padding: 12px;
+    margin-top: 12px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  .edit-opt-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .edit-opt-row input {
+    flex: 1;
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+
+  .btn-remove {
+    padding: 4px 8px;
+    font-size: 1rem;
+  }
+
+  .btn-add-opt,
+  .save-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.9rem;
+    margin-top: 8px;
+  }
+
+  .result-box {
+    padding: 24px 16px;
+    margin-top: 20px;
+    border-radius: 16px;
+  }
+
+  .big-score {
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+
+  .result-box p {
+    font-size: 0.95rem;
+  }
+
+  .submit-button {
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  .restart-button {
+    padding: 12px 20px;
+    margin-top: 12px;
+    font-size: 0.95rem;
+  }
+
+  .separator {
+    margin: 16px 0;
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .edit-actions button {
+    flex: 1;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .edit-input-text {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.95rem;
+  }
+
+  .edit-mode-active {
+    background: #f0fdf4;
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .content {
+    padding: 16px 8px;
+  }
+
+  .back-button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+
+  .teacher-controls {
+    padding: 8px;
+    margin-bottom: 16px;
+  }
+
+  .quiz-settings-panel h3 {
+    font-size: 0.95rem;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .setting-item input {
+    padding: 6px;
+    font-size: 16px;
+  }
+
+  .btn-save-settings {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .add-btn {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .question-box {
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+  .question-text {
+    font-size: 0.95rem;
+    margin: 8px 0 12px;
+  }
+
+  .option {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .option input {
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+  }
+
+  .result-box {
+    padding: 20px 12px;
+  }
+
+  .big-score {
+    font-size: 1.75rem;
+  }
+
+  .submit-button {
+    padding: 10px;
+    font-size: 0.95rem;
+  }
+
+  .edit-opt-row {
+    flex-direction: column;
+  }
+
+  .edit-opt-row input:first-child {
+    width: auto;
+  }
 }
 </style>

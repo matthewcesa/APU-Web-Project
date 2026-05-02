@@ -218,6 +218,112 @@ form button:disabled {
 
   .login-card {
     max-width: none;
+    padding: 1.8rem;
+  }
+
+  .brand h1 {
+    font-size: 1.2rem;
+  }
+
+  .brand-logo {
+    width: 38px;
+    height: 38px;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.8rem;
+  }
+
+  label {
+    font-size: 0.9rem;
+  }
+
+  input {
+    padding: 0.75rem;
+    font-size: 16px;
+  }
+
+  form button {
+    padding: 0.85rem;
+    font-size: 0.95rem;
+  }
+
+  .error {
+    font-size: 0.9rem;
+    padding: 0.7rem;
+    margin-top: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 1rem;
+    min-height: 100vh;
+    justify-content: center;
+  }
+
+  .back-home-button {
+    margin-bottom: 0.8rem;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  .login-card {
+    padding: 1.5rem 1rem;
+    border-radius: 16px;
+    width: 100%;
+  }
+
+  .brand {
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .brand-logo {
+    width: 35px;
+    height: 35px;
+  }
+
+  .brand h1 {
+    font-size: 1.1rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.7rem;
+  }
+
+  label {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+
+  input {
+    padding: 0.65rem;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+  form button {
+    width: 100%;
+    margin-top: 0.8rem;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .error {
+    font-size: 0.85rem;
+    padding: 0.6rem;
+    border-radius: 8px;
   }
 }
 </style>

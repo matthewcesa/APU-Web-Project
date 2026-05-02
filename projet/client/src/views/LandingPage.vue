@@ -174,4 +174,65 @@ button:hover {
     font-size: 2.2rem;
   }
 }
+
+@media (max-width: 600px) {
+  .hero {
+    padding: 1rem;
+    min-height: calc(100vh - 100px);
+  }
+
+  .hero-card {
+    padding: 2rem 1.2rem;
+    border-radius: 16px;
+  }
+
+  .hero-card h1 {
+    font-size: 1.8rem;
+    line-height: 1.2;
+    margin-bottom: 0.8rem;
+  }
+
+  .hero-card p {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  button {
+    padding: 0.8rem 1.8rem;
+    font-size: 0.95rem;
+  }
+
+  .page-intro h1 {
+    font-size: 1.6rem;
+  }
+
+  .page-intro p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    min-height: calc(100vh - 80px);
+  }
+
+  .hero-card {
+    padding: 1.5rem 1rem;
+    max-width: 100%;
+  }
+
+  .hero-card h1 {
+    font-size: 1.5rem;
+  }
+
+  .hero-card p {
+    font-size: 0.95rem;
+  }
+
+  button {
+    width: 100%;
+    padding: 0.75rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
 </style>

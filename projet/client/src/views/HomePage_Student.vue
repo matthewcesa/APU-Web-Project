@@ -565,4 +565,188 @@ nav a:hover {
     width: 100%;
   }
 }
+
+@media (max-width: 600px) {
+  .content {
+    padding: 2.5rem 1rem;
+  }
+
+  .page-intro h1 {
+    font-size: 1.6rem;
+  }
+
+  .page-intro p {
+    font-size: 0.95rem;
+  }
+
+  .courses-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+
+  .course-card {
+    border-radius: 10px;
+  }
+
+  .course-cover {
+    height: 120px;
+  }
+
+  .course-content {
+    padding: 1.2rem;
+  }
+
+  .course-content h2 {
+    font-size: 1.1rem;
+  }
+
+  .course-description {
+    font-size: 0.92rem;
+    margin: 0.7rem 0 1rem;
+  }
+
+  .course-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .open-button {
+    padding: 0.7rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .join-course-box {
+    padding: 1.2rem;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .join-course-box h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .join-course-box > div:first-child p {
+    font-size: 0.9rem;
+  }
+
+  .join-form input {
+    min-width: unset;
+    padding: 0.75rem;
+    font-size: 16px;
+  }
+
+  .join-form button {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .page-intro {
+    margin-bottom: 1.2rem;
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .page-intro h1 {
+    font-size: 1.35rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .page-intro p {
+    font-size: 0.9rem;
+  }
+
+  .courses-grid {
+    gap: 1rem;
+  }
+
+  .course-cover {
+    height: 100px;
+  }
+
+  .course-cover::after {
+    display: none;
+  }
+
+  .course-status {
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+  }
+
+  .course-content {
+    padding: 0.9rem;
+  }
+
+  .course-content h2 {
+    font-size: 1rem;
+  }
+
+  .course-description {
+    min-height: auto;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0.5rem 0 0.8rem;
+  }
+
+  .course-meta {
+    gap: 0.3rem;
+    margin-bottom: 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .open-button {
+    padding: 0.6rem 0.7rem;
+    font-size: 0.85rem;
+  }
+
+  .join-course-box {
+    padding: 0.9rem;
+    margin-top: 0.8rem;
+    border-radius: 12px;
+  }
+
+  .join-course-box h2 {
+    font-size: 1rem;
+  }
+
+  .join-course-box > div:first-child p {
+    font-size: 0.8rem;
+  }
+
+  .join-form input {
+    padding: 0.65rem;
+    font-size: 16px;
+  }
+
+  .join-form button {
+    padding: 0.65rem;
+    font-size: 0.85rem;
+  }
+
+  .info-message,
+  .error-message,
+  .empty-state {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+  }
+
+  .empty-state span {
+    font-size: 2rem;
+  }
+}
 </style>
