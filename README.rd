@@ -2,14 +2,14 @@
 # MCQoodle — Fullstack WEB Platform (Vue + Express + MySQL)
 
 ## Group Collaboration
-This project is the result of a collaborative effort by a **team of 4 students** from the same cohort. Working together, we implemented a complete development lifecycle, from initial planning and database schema design to final deployment and testing.
+This project is the result of a collaborative effort by a **team of 4 students** from the same cohort. Working together, we implemented a complete development lifecycle, from initial planning and database schema design to final interfaces and testing.
 
 ## Development Team
 A special thanks to the team members who contributed to this project:
 ** Crauser Antoine ** 
 ** Besnard Clément ** 
-** Karl Gaudissard ** 
-** Cesa Matthew-Frédérick (me) ** 
+** Gaudissard Karl  ** 
+** Cesa Matthew-Frédérick ** 
 
 -------
 
@@ -65,7 +65,7 @@ Import `database_learning_platform.sql` into your MySQL server.
 Current config (as of now):
 - host: `localhost`
 - user: `root`
-- password: `root`
+- password: `root` OR let empty if on windows (bug we experienced using both MacOs and Windows devices)
 - database: `learning_platform`
 
 ### 3. Start frontend + backend

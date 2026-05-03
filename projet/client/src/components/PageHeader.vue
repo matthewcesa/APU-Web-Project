@@ -83,7 +83,7 @@ function toggleMenu() {
 
     <div class="nav-actions">
       <div v-if="user" class="user-area">
-        <span class="user-name">👤 {{ user.first_name }} {{ user.last_name }}</span>
+        <span class="user-name">{{ user.first_name }} {{ user.last_name }}</span>
         <button class="logout-button" @click="handleLogout">Log out</button>
       </div>
 

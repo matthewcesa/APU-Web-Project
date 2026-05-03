@@ -1,30 +1,3 @@
-/*const db = require('../db')
-
-// GET ALL Attempts
-exports.getAll = (callback) => {
-  db.query('SELECT * FROM Attempts', callback)
-}
-
-// GET ONE Attempts
-exports.getById = (id, callback) => {
-  db.query('SELECT * FROM Attempts WHERE id = ?', [id], callback)
-}
-
-// CREATE Attempts
-exports.create = (data, callback) => {
-  db.query('INSERT INTO Attempts SET ?', data, callback)
-}
-
-// UPDATE Attempts
-exports.update = (id, data, callback) => {
-  db.query('UPDATE Attempts SET ? WHERE id = ?', [data, id], callback)
-}
-
-// DELETE Attempts
-exports.delete = (id, callback) => {
-  db.query('DELETE FROM Attempts WHERE id = ?', [id], callback)
-}*/
-
 const db = require('../db')
 
 // GET ALL enrollments

@@ -75,7 +75,7 @@
       path: '/about-team',
       name: 'about-team',
       component: AboutTeam,
-    },
+    }
     ]
   })
 
