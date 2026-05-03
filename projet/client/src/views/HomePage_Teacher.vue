@@ -110,7 +110,7 @@ async function createCourse() {
       throw new Error('Course title is required.')
     }
 
-    // ✅ Validation slug
+    // Validation slug
     if (!form.value.slug.trim()) {
       throw new Error('Slug is required.')
     }
@@ -132,7 +132,7 @@ async function createCourse() {
     const data = await response.json()
 
     if (!response.ok) {
-      // ✅ Interception erreur doublon slug
+      // Interception erreur doublon slug
       const msg = data.message || data.error || ''
       if (msg.includes('uk_courses_slug') || msg.includes('slug')) {
         throw new Error('Slug already existing.')

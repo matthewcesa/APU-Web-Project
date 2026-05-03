@@ -1,5 +1,5 @@
 # Advanced Web Programming Project
-# MCQoodle — Fullstack WEB Platform (Vue + Express + MySQL)
+# MCQoodle - Fullstack WEB Platform (Vue + Express + MySQL)
 
 ## Group Collaboration
 This project is the result of a collaborative effort by a **team of 4 students** from the same cohort. Working together, we implemented a complete development lifecycle, from initial planning and database schema design to final interfaces and testing.

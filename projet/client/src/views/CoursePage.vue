@@ -25,11 +25,13 @@ const quizForm = ref({
 })
 
 const quizError = ref('')
+const moduleError = ref('')
 const quizMessage = ref('')
 const courseMessage = ref('')
 const moduleMessage = ref('')
 const loading = ref(true)
 const error = ref('')
+
 
 const isTeacher = computed(() => String(user.value?.role || '').toLowerCase() === 'teacher')
 
@@ -101,7 +103,21 @@ async function fetchCourseData() {
 }
 
 async function createModule() {
-  if (!moduleForm.value.title.trim()) return
+  if (!moduleForm.value.title.trim()) {
+    moduleMessage.value = ''
+    moduleError.value = 'Module title cannot be empty.'
+    return
+  }
+  const duplicate = modules.value.some(
+    (m) => m.title.trim().toLowerCase() === moduleForm.value.title.trim().toLowerCase()
+  )
+  if (duplicate) {
+    moduleMessage.value = ''
+    moduleError.value = 'A module with this title already exists.'
+    return
+  }
+
+  moduleError.value = ''
   try {
     const response = await fetch('http://localhost:3000/api/modules', {
       method: 'POST',
@@ -114,17 +130,43 @@ async function createModule() {
     })
     if (response.ok) {
       moduleMessage.value = 'Module created!'
+      moduleError.value = ''
       moduleForm.value = { title: '', description: '' }
       await fetchCourseData()
     }
   } catch {
-    error.value = 'Failed to create module'
+    moduleError.value = 'Failed to create module'
   }
 }
 
 async function createQuiz() {
   if (!quizForm.value.module_id || !quizForm.value.title.trim()) {
-    quizError.value = 'Please select a module and title.'
+    quizMessage.value = ''
+    quizError.value = 'Please select a module and enter a title.'
+    return
+  }
+
+  
+  const duplicate = quizzes.value.some(
+    (q) =>
+      q.title.trim().toLowerCase() === quizForm.value.title.trim().toLowerCase() &&
+      q.module_id === quizForm.value.module_id
+  )
+  if (duplicate) {
+    quizMessage.value = ''
+    quizError.value = 'A quiz with this title already exists in this module.'
+    return
+  }
+
+  const duration = quizForm.value.duration
+  if (!Number.isInteger(duration) || duration <= 0) {
+    quizMessage.value = ''
+    quizError.value = 'Invalid duration format - must be a whole number.'
+    return
+  }
+  if (duration === 0) {
+    quizMessage.value = ''
+    quizError.value = 'A quiz of 0 minutes is not possible.'
     return
   }
 
@@ -172,6 +214,11 @@ async function createQuiz() {
   }
 }
 async function updateCourse() {
+  if (!courseForm.value.title.trim()) {
+    courseMessage.value = ''
+    error.value = 'Course title cannot be empty.'
+    return
+  }
   try {
     const response = await fetch(`http://localhost:3000/api/courses/${course.value.course_id}`, {
       method: 'PUT',
@@ -179,10 +226,12 @@ async function updateCourse() {
       body: JSON.stringify(courseForm.value),
     })
     if (response.ok) {
+      error.value = ''
       courseMessage.value = 'Course updated successfully.'
       await fetchCourseData()
     }
   } catch (err) {
+    courseMessage.value = ''
     error.value = err.message
   }
 }
@@ -227,7 +276,6 @@ async function deleteQuiz(quizId) {
       <button class="back-button" @click="goBack">← Back to courses</button>
 
       <p v-if="loading" class="message">Loading course...</p>
-      <p v-else-if="error" class="error-message">{{ error }}</p>
 
       <template v-else>
         <section class="course-info">
@@ -245,6 +293,7 @@ async function deleteQuiz(quizId) {
             <div class="admin-card">
               <h3>Edit Course Info</h3>
               <div v-if="courseMessage" class="success-message">{{ courseMessage }}</div>
+              <div v-if="error" class="error-message">{{ error }}</div>
               <div class="form-group">
                 <label>Title</label>
                 <input v-model="courseForm.title" type="text" />
@@ -260,6 +309,7 @@ async function deleteQuiz(quizId) {
               <h3>1. Create a Module (The Link)</h3>
               <p class="help-text">A module connects the course to your quizzes.</p>
               <div v-if="moduleMessage" class="success-message">{{ moduleMessage }}</div>
+              <div v-if="moduleError" class="error-message">{{ moduleError }}</div>
               <div class="form-group">
                 <label>Module Title</label>
                 <input
@@ -655,6 +705,17 @@ async function deleteQuiz(quizId) {
   border: 2px dashed #e2e8f0;
   border-radius: 24px;
   color: #94a3b8;
+}
+
+.error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 /* animation */
