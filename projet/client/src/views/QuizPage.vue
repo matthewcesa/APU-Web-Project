@@ -458,7 +458,6 @@ onUnmounted(stopTimer)
 
             <button @click="saveQuestion" class="save-btn">Save to Database</button>
           </div>
-          <hr class="separator" />
         </section>
 
         <section v-if="examAlreadySubmitted && user?.role === 'student'" class="locked-result-box">
@@ -1045,10 +1044,6 @@ onUnmounted(stopTimer)
     padding: 12px 20px;
     margin-top: 12px;
     font-size: 0.95rem;
-  }
-
-  .separator {
-    margin: 16px 0;
   }
 
   .edit-actions {
