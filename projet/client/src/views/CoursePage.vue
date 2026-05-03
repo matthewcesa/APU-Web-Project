@@ -32,7 +32,6 @@ const courseMessage = ref('')
 const moduleMessage = ref('')
 const loading = ref(true)
 const error = ref('')
-const isVisible = ref(false)
 
 const isTeacher = computed(() => String(user.value?.role || '').toLowerCase() === 'teacher')
 
@@ -113,17 +112,6 @@ async function fetchCourseData() {
   } finally {
     loading.value = false
   }
-}
-
-function attemptsLeft(quiz) {
-  if (!quiz.max_attempts) return Infinity // illimité
-  const used = quiz.last_attempt ? 1 : 0
-  return quiz.max_attempts - used
-}
-
-function isQuizLocked(quiz) {
-  if (isTeacher.value) return false
-  return quiz.max_attempts === 0 || attemptsLeft(quiz) <= 0
 }
 
 async function createModule() {
@@ -428,16 +416,11 @@ async function deleteQuiz(quizId) {
               v-for="quiz in quizzes"
               :key="quiz.quiz_id"
               class="quiz-item"
-              :class="{ 'quiz-locked': isQuizLocked(quiz) }"
             >
               <div>
                 <h3>{{ quiz.title }}</h3>
                 <small class="module-badge">{{ quiz.module_title }}</small>
-              </div>
-
-              <div v-if="!isTeacher && quiz.max_attempts" class="attempts-info">
-                <span v-if="quiz.max_attempts === 0" class="attempts-exhausted">Unavailable</span>
-              </div>
+              </div>  
 
               <div class="quiz-actions">
                 <button
@@ -446,15 +429,9 @@ async function deleteQuiz(quizId) {
                   @click.stop="deleteQuiz(quiz.quiz_id || quiz.id)"
                 >delete</button>
 
-                <button
-                  v-if="isTeacher || (!isQuizLocked(quiz) && (quiz.type === 'practice' || !quiz.last_attempt))"
-                  @click="openQuiz(quiz)"
-                  :disabled="isQuizLocked(quiz)"
-                >
-                  {{ quiz.type === 'practice' && quiz.last_attempt ? 'Try Again' : 'Open' }}
+                <button @click="openQuiz(quiz)">
+                  Open
                 </button>
-
-                <span v-if="isQuizLocked(quiz) && !isTeacher" class="locked-badge">Unavailable</span>
 
                 <span v-if="quiz.last_attempt" class="score-badge">
                   Score:
@@ -769,33 +746,6 @@ async function deleteQuiz(quizId) {
   margin-bottom: 20px;
   font-size: 0.9rem;
   font-weight: 500;
-}
-
-.quiz-locked {
-  opacity: 0.45;
-  filter: grayscale(0.5);
-  pointer-events: none;
-  border-color: #e2e8f0 !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-.attempts-info {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #64748b;
-}
-
-.attempts-exhausted {
-  color: #dc2626;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.locked-badge {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #94a3b8;
 }
 
 /* animation */

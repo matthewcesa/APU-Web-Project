@@ -460,7 +460,19 @@ onUnmounted(stopTimer)
           </div>
           <hr class="separator" />
         </section>
-<section v-if="!examAlreadySubmitted || quiz?.type === 'practice'" class="questions">
+
+        <section v-if="examAlreadySubmitted && user?.role === 'student'" class="locked-result-box">
+          <div class="locked-icon">🔒</div>
+          <h2>Quiz Completed</h2>
+          <p>You have used all your attempts for this quiz.</p>
+          <div v-if="score !== null && total > 0" class="final-score-locked">
+            <span class="big-score">{{ scoreOutOf20 }} / 20</span>
+            <p>{{ score }} / {{ total }} points</p>
+          </div>
+          <button class="back-button-centered" @click="goBack">← Back to course</button>
+        </section>
+
+        <section v-else-if="!examAlreadySubmitted || quiz?.type === 'practice'" class="questions">
           <div v-if="timeLeft !== null && !submitted && user.role === 'student'" 
                class="timer-bar" :class="{ 'timer-low': timeLeft < 60 }">
             Remaining: {{ formattedTime }}
@@ -1156,6 +1168,88 @@ onUnmounted(stopTimer)
   }
 }
 
+/* --- Écran Quiz Verrouillé (attempts épuisées) --- */
+.locked-result-box {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3);
+  margin-top: 40px;
+}
+
+.locked-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  display: block;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.locked-result-box h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: #f1f5f9;
+}
+
+.locked-result-box p {
+  font-size: 1.1rem;
+  color: #cbd5e1;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.final-score-locked {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 30px;
+  margin: 30px 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.final-score-locked .big-score {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #818cf8;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.final-score-locked p {
+  font-size: 1rem;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.back-button-centered {
+  display: inline-block;
+  background: white;
+  color: #0f172a;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  margin-top: 20px;
+}
+
+.back-button-centered:hover {
+  background: #f1f5f9;
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
 /* --- Bouton "Edit" dans l'en-tête de question --- */
 .question-header {
   display: flex;
@@ -1164,12 +1258,17 @@ onUnmounted(stopTimer)
   margin-bottom: 8px;
 }
 
-.btn-small-edit {
+.question-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-small-edit,
+.btn-small-delete {
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
-  color: #475569;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -1179,11 +1278,26 @@ onUnmounted(stopTimer)
   transition: all 0.2s ease;
 }
 
+.btn-small-edit {
+  color: #475569;
+}
+
 .btn-small-edit:hover {
   background: #eef2ff;
   color: #4f46e5;
   border-color: #c7d2fe;
   box-shadow: 0 4px 8px rgba(79, 70, 229, 0.15);
+}
+
+.btn-small-delete {
+  color: #7f1d1d;
+}
+
+.btn-small-delete:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.15);
 }
 
 /* --- Bloc d'édition de question (mode edit) --- */
