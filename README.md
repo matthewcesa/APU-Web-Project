@@ -6,10 +6,9 @@ This project is the result of a collaborative effort by a **team of 4 students**
 
 ## Development Team
 A special thanks to the team members who contributed to this project:
-** Crauser Antoine ** 
-** Besnard Clément ** 
-** Gaudissard Karl  ** 
-** Cesa Matthew-Frédérick ** 
+**Crauser Antoine**,
+**Besnard Clément**,
+**Gaudissard Karl**, and **Cesa Matthew-Frédérick** 
 
 -------
 
@@ -41,42 +40,67 @@ To run the project, refer to the line "Setup & Running (Development)"
 ---
 
 ## Prerequisites
-- Node.js (20+ recommended)
+- **Node.js**: `^20.19.0` or `>=22.12.0` (Node.js 21.x is NOT supported due to Vite compatibility issues)
 - MySQL installed and running locally
-- MySQL database named: `learning_platform` (or update it in `projet/server/db.js`)
+- MySQL database named: `learning_platform` (or update it in `.env`)
 
 ---
 
 ## Setup & Running (Development)
 
-### 1. Install dependencies (root)
+### Prerequisites Setup
+Before starting, ensure:
+1. **MySQL is running** (XAMPP on Windows, MAMP on MacOS)
+2. Create a database named `learning_platform` in your MySQL server
+
+### Step 1: Configure Environment Variables
+From the `projet` directory, create a `.env` file based on the template:
+```bash
+cd projet
+cp .env.example .env
+```
+
+Then edit `.env` to match your setup.
+
+### Step 2: Install root dependencies
 From the repository root:
----------------
-bash
+```bash
 npm install
----------------
+```
 
+### Step 3: Install client dependencies
+**Important:** The client requires Node.js `^20.19.0` or `>=22.12.0` (Node.js 21.x has compatibility issues with Vite).
 
-### 2. Import the database schema
-Import `database_learning_platform.sql` into your MySQL server.
-- Make sure the database is named **learning_platform**
-- Then verify the connection credentials in `projet/server/db.js`
+Install dependencies for the Vue frontend:
+```bash
+cd client
+npm install
+cd ..
+```
 
-Current config (as of now):
-- host: `localhost`
-- user: `root`
-- password: `root` OR let empty if on windows (bug we experienced using both MacOs and Windows devices)
-- database: `learning_platform`
+### Step 4: Import the database schema
+1. Open your MySQL client (phpMyAdmin, MySQL Workbench, etc.)
+2. Open the file `database_learning_platform.sql` from the project root
+3. Execute all the SQL commands to populate your `learning_platform` database
 
-### 3. Start frontend + backend
----------------
-bash
+### Step 5: Seed the database with sample data
+From the `projet/server` directory, run the seeding script to populate the database with initial data:
+```bash
+cd server
+node seedDatabase.js
+```
+
+This will insert sample users (admin, teacher, student), courses, modules, quizzes, and questions into your database.
+
+### Step 6: Start the application
+From the `projet` directory:
+```bash
 npm run dev
----------------
+```
 
-This runs:
-- backend on **http://localhost:3000**
-- frontend (Vite) at the usual Vite dev URL
+**What this does:**
+- Backend runs on: **http://localhost:3000**
+- Frontend runs on: **http://localhost:5173** (Vite default)
 
 ---
 
@@ -157,6 +181,45 @@ Teacher behavior:
   - create question: `POST /api/questions`
   - create options: `POST /api/question-options`
   - update question: `PUT /api/questions/:questionId`
+
+---
+
+## Environment Variables
+
+All sensitive configuration should be stored in a `.env` file in the `projet` directory. **Never commit this file to version control.**
+
+### Creating Your `.env` File
+
+1. Copy the template:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` with your local credentials:
+   ```env
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=        # Your MySQL password (empty if none)
+   DB_NAME=learning_platform
+   PORT=3000
+   NODE_ENV=development
+   ```
+
+### Available Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DB_HOST` | MySQL server host | `localhost` |
+| `DB_USER` | MySQL username | `root` |
+| `DB_PASSWORD` | MySQL password | empty string |
+| `DB_NAME` | Database name | `learning_platform` |
+| `PORT` | Backend server port | `3000` |
+| `NODE_ENV` | Environment (development/production) | `development` |
+
+### Important Notes
+- The `.env` file is **gitignored** and should never be committed
+- Keep `.env.example` updated with new variables (without sensitive values)
+- Each developer should have their own `.env` file
 
 ---
 
