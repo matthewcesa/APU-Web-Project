@@ -362,6 +362,7 @@ async function deleteCourse(courseId, event) {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
 
 .course-content h2 {
@@ -444,6 +445,39 @@ async function deleteCourse(courseId, event) {
   border-radius: 10px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
+}
+
+/* Bouton delete sur une course */
+.delete-course-btn {
+  margin-top: 16px;
+  align-self: flex-start;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.delete-course-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(220, 38, 38, 0.18);
+}
+
+.delete-course-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.15);
 }
 
 @media (max-width: 768px) {
