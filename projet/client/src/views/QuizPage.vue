@@ -29,6 +29,7 @@ const editingQuestionId = ref(null)
 const editForm = ref(null)
 const settingsMessage = ref('')
 const settingsError = ref('')
+const attemptCount = ref(0)
 
 const newQuestion = ref({
   question_text: '',
@@ -137,19 +138,24 @@ async function loadLastAttempt() {
   try {
     const res = await fetch(`http://localhost:3000/api/attempts/student/${user.value.user_id}/quiz/${route.params.id}`)
     const data = await res.json()
-    
+
     if (data && data.length > 0) {
+      attemptCount.value = data.length
       const last = data[0]
       lastAttemptId.value = last.attempt_id
       score.value = Number(last.score || 0)
       total.value = getTotalPoints()
-      if (quiz.value?.type === 'exam' || quiz.value?.max_attempts === 1) {
+
+      const maxReached = quiz.value?.max_attempts > 0 && data.length >= quiz.value.max_attempts
+      const isExamType = quiz.value?.type === 'exam' || quiz.value?.max_attempts === 1
+
+      if (isExamType || maxReached) {
         submitted.value = true
         examAlreadySubmitted.value = true
         stopTimer()
       } else {
-        submitted.value = true 
-        examAlreadySubmitted.value = false 
+        submitted.value = true
+        examAlreadySubmitted.value = false
       }
     }
   } catch (e) { console.error(e) }
@@ -224,6 +230,13 @@ async function submitQuiz() {
   score.value = calculatedScore
   total.value = getTotalPoints()
   submitted.value = true
+  attemptCount.value += 1
+
+  const maxAttempts = quiz.value?.max_attempts
+  if (maxAttempts > 0 && attemptCount.value >= maxAttempts) {
+    examAlreadySubmitted.value = true
+  }
+
   try {
     const attemptId = await saveAttempt()
     for (const q of questions.value) {
@@ -255,14 +268,21 @@ async function saveQuestionAnswers(attemptId, question) {
 }
 
 function restartQuiz() {
+  const maxAttempts = quiz.value?.max_attempts
+  if (maxAttempts > 0 && attemptCount.value >= maxAttempts) {
+    examAlreadySubmitted.value = true
+    return
+  }
+
   stopTimer()
-  resetAnswers() 
-  submitted.value = false 
-  examAlreadySubmitted.value = false 
+  resetAnswers()
+  submitted.value = false
+  examAlreadySubmitted.value = false
   score.value = 0
   lastAttemptId.value = null
-  startTimer() 
+  startTimer()
 }
+
 async function saveQuestion() {
   try {
     const qRes = await fetch('http://localhost:3000/api/questions', {
@@ -494,7 +514,16 @@ onUnmounted(stopTimer)
               <span class="big-score">{{ scoreOutOf20 }} / 20</span>
               <p>{{ score }} / {{ total }} points</p>
             </div>
-            <button v-if="!isExam()" @click="restartQuiz" class="restart-button">Try Again</button>
+            <button 
+              v-if="submitted && !examAlreadySubmitted && !isExam()" 
+              @click="restartQuiz" 
+              class="restart-button"
+            >
+              Try Again
+              <span v-if="quiz.max_attempts > 0" class="attempts-counter">
+                ({{ attemptCount }} / {{ quiz.max_attempts }})
+              </span>
+            </button>
           </div>
         </section>
       </template>
