@@ -101,13 +101,18 @@ function goToCourse(courseId) {
   router.push(`/courses/${courseId}`)
 
 }
-async function createCourse(){
+async function createCourse() {
   error.value = ''
   success.value = ''
   loading.value = true
-  try{
+  try {
     if (!form.value.title.trim()) {
       throw new Error('Course title is required.')
+    }
+
+    // ✅ Validation slug
+    if (!form.value.slug.trim()) {
+      throw new Error('Slug is required.')
     }
 
     const titlePrefix = form.value.title.slice(0, 3).toUpperCase().padEnd(3, 'X')
@@ -116,35 +121,36 @@ async function createCourse(){
 
     const response = await fetch('http://localhost:3000/api/courses', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...form.value,
         join_code: generatedJoinCode,
         teacher_id: user.value.user_id,
       }),
-      
     })
+
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || 'Failed to create course')
+      // ✅ Interception erreur doublon slug
+      const msg = data.message || data.error || ''
+      if (msg.includes('uk_courses_slug') || msg.includes('slug')) {
+        throw new Error('Slug already existing.')
+      }
+      throw new Error(msg || 'Failed to create course')
     }
 
     success.value = 'Course created successfully.'
     resetForm()
     showCreateForm.value = false
-
     await fetchteacherCourses()
-  }catch(err) { 
+
+  } catch (err) {
     error.value = err.message
   } finally {
     loading.value = false
   }
 }
-
 async function deleteCourse(courseId, event) {
   event.stopPropagation()
 
@@ -259,7 +265,12 @@ async function deleteCourse(courseId, event) {
 
             <div class="form-group">
               <label>Slug</label>
-              <input v-model="form.slug" type="text" placeholder="advanced-web-programming" />
+              <input
+                v-model="form.slug"
+                type="text"
+                placeholder="advanced-web-programming"
+                required
+              />
             </div>
 
             <div class="form-group">
