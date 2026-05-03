@@ -22,6 +22,7 @@ const quizForm = ref({
   description: '',
   type: 'practice',
   duration: 30,
+  max_attempts: 1,
 })
 
 const quizError = ref('')
@@ -170,6 +171,18 @@ async function createQuiz() {
     return
   }
 
+  const attempts = quizForm.value.max_attempts
+  if (attempts === null || attempts === undefined || attempts === '') {
+    quizMessage.value = ''
+    quizError.value = 'Max attempts cannot be empty.'
+    return
+  }
+  if (!Number.isInteger(attempts) || attempts < 0) {
+    quizMessage.value = ''
+    quizError.value = 'Max attempts must be a positive whole number.'
+    return
+  }
+
   try {
     const response = await fetch('http://localhost:3000/api/quizzes', {
       method: 'POST',
@@ -181,6 +194,7 @@ async function createQuiz() {
         type: quizForm.value.type,
         teacher_id: user.value.user_id,
         is_published: 1,
+        max_attempts: quizForm.value.max_attempts,
       }),
     })
 
@@ -206,6 +220,7 @@ async function createQuiz() {
       description: '',
       type: 'practice',
       duration: 30,
+      max_attempts: 1,
     }
 
     await fetchCourseData()
@@ -370,6 +385,10 @@ async function deleteQuiz(quizId) {
                     <div class="input-with-unit">
                       <input v-model.number="quizForm.duration" type="number" min="1" />
                     </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Max Attempts</label>
+                    <input v-model.number="quizForm.max_attempts" type="number" min="1" />
                   </div>
                 </div>
                 <button class="primary-button" @click="createQuiz">Create Quiz</button>

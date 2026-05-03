@@ -309,6 +309,27 @@ async function updateQuestion() {
     await loadQuiz()
   } catch { alert("Error updating question") }
 }
+
+async function deleteQuestion(questionId) {
+  if (!confirm('Are you sure you want to delete this question?')) return
+  try {
+    const response = await fetch(`http://localhost:3000/api/questions/${questionId}`, {
+      method: 'DELETE',
+    })
+    if (response.ok) {
+      await loadQuiz()
+      settingsError.value = ''
+      settingsMessage.value = 'Question deleted successfully.'
+      setTimeout(() => { settingsMessage.value = '' }, 3000)
+    } else {
+      throw new Error('Failed to delete question')
+    }
+  } catch (err) {
+    settingsMessage.value = ''
+    settingsError.value = 'Error deleting question.'
+  }
+}
+
 function getTotalPoints() { return questions.value.reduce((s, q) => s + Number(q.points || 1), 0) }
 function getQuestionScore(q) {
   const ans = answers.value[q.question_id]
@@ -447,7 +468,10 @@ onUnmounted(stopTimer)
               <div v-else>
                 <div class="question-header">
                   <h3>Question {{ idx + 1 }}</h3>
-                  <button v-if="user.role === 'teacher'" @click="startEdit(q)" type="button" class="btn-small-edit">Edit</button>
+                  <div class="question-header-actions" v-if="user.role === 'teacher'">
+                    <button @click="startEdit(q)" type="button" class="btn-small-edit">Edit</button>
+                    <button @click="deleteQuestion(q.question_id)" type="button" class="btn-small-delete">Delete</button>
+                  </div>
                 </div>
                 <p class="question-text">{{ q.question_text }}</p>
                 <div class="options-list">
@@ -761,6 +785,32 @@ onUnmounted(stopTimer)
 }
 
 .btn-remove-inline:hover {
+  background: #fecaca;
+  color: #b91c1c;
+  border-color: #f87171;
+}
+
+.question-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-small-delete {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.btn-small-delete:hover {
   background: #fecaca;
   color: #b91c1c;
   border-color: #f87171;
