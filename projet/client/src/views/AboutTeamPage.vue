@@ -18,8 +18,8 @@ const teamMembers = [
   },
   {
     name: 'Clément Besnard',
-    role: 'Database design',
-    description: 'Worked on some vues and CSS',
+    role: 'Backend development',
+    description: 'Worked on the backend REST points API',
   },
   {
     name: 'Karl GAUDISSARD',
