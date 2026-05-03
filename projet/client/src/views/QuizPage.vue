@@ -988,4 +988,257 @@ onUnmounted(stopTimer)
     width: auto;
   }
 }
+
+/* --- Bouton "Edit" dans l'en-tête de question --- */
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.btn-small-edit {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-small-edit:hover {
+  background: #eef2ff;
+  color: #4f46e5;
+  border-color: #c7d2fe;
+  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.15);
+}
+
+/* --- Bloc d'édition de question (mode edit) --- */
+.edit-mode-active {
+  background: #f9fafb;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  padding: 18px 20px;
+  box-shadow:
+    0 12px 20px -8px rgba(15, 23, 42, 0.12),
+    0 4px 6px -4px rgba(15, 23, 42, 0.08);
+}
+
+.edit-mode-active .form-group label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.edit-input-text {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.edit-input-text:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* --- Liste d'options en mode édition --- */
+.edit-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.edit-opt-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+}
+
+.edit-opt-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+.edit-opt-row input[type="text"],
+.edit-opt-row input:not([type="checkbox"]) {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  background: transparent;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.edit-opt-row input[type="text"]:focus,
+.edit-opt-row input:not([type="checkbox"]):focus {
+  outline: none;
+  border-color: #6366f1;
+  background: #eef2ff;
+}
+
+/* --- Boutons Save / Cancel dans le bloc edit --- */
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.btn-save-edit,
+.btn-cancel-edit {
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+/* Save = primary */
+.btn-save-edit {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.3);
+}
+
+.btn-save-edit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.35);
+  filter: brightness(1.05);
+}
+
+/* Cancel = secondary */
+.btn-cancel-edit {
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-cancel-edit:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* Boutons Save / Cancel FULL FORM création question */
+.save-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.35);
+  transition: all 0.2s ease;
+}
+
+.save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(79, 70, 229, 0.4);
+}
+
+/* bouton pour retirer une option dans le formulaire de création */
+.btn-remove {
+  border-radius: 999px;
+  border: none;
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 4px 9px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-remove:hover {
+  background: #fecaca;
+}
+
+/* bouton + Add option */
+.btn-add-opt {
+  margin-top: 8px;
+  border-radius: 999px;
+  border: 1px dashed #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-add-opt:hover {
+  background: #eef2ff;
+  border-color: #a5b4fc;
+}
+
+/* --- Bouton Restart cohérent --- */
+.restart-button {
+  margin-top: 16px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.restart-button:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+/* Petites adaptations responsive si tu veux serrer un peu */
+@media (max-width: 768px) {
+  .edit-options-list {
+    gap: 8px;
+  }
+
+  .edit-opt-row {
+    grid-template-columns: auto 1fr;
+    padding: 8px;
+  }
+
+  .btn-save-edit,
+  .btn-cancel-edit {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+
+  .btn-small-edit {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+  }
+}
 </style>

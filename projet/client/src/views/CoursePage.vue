@@ -195,7 +195,7 @@ function openQuiz(quiz) {
 }
 
 async function deleteQuiz(quizId) {
-  if (!confirm('Are you sure you want to delete this quiz definitively')) {
+  if (!confirm('Are you sure you want to delete this quiz definitively ?')) {
     return
   }
 
@@ -720,6 +720,64 @@ async function deleteQuiz(quizId) {
   }
 }
 
+/* Quiz action buttons */
+.quiz-actions button {
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+/* Open button (primary action) */
+.quiz-actions button:not(.delete-button) {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.quiz-actions button:not(.delete-button):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+  filter: brightness(1.05);
+}
+
+.quiz-actions button:not(.delete-button):active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px -1px rgba(79, 70, 229, 0.2);
+}
+
+/* Delete button (danger action) */
+.delete-button {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  min-height: 40px;
+}
+
+.delete-button:hover {
+  background: #fecaca;
+  color: #b91c1c;
+  border-color: #f87171;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.15);
+}
+
+.delete-button:active {
+  background: #fecaca;
+  transform: translateY(0);
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .content {
@@ -918,6 +976,40 @@ async function deleteQuiz(quizId) {
   .quiz-actions button,
   .quiz-actions span {
     width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .quiz-actions button {
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      flex: 1;
+      min-width: 90px;
+    }
+    
+    .delete-button {
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      order: 3; /* Delete button last on mobile */
+    }
+    
+    .quiz-actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .quiz-actions button {
+      padding: 10px 12px;
+      font-size: 0.8rem;
+    }
+    
+    .delete-button {
+      padding: 8px 12px;
+      font-size: 0.75rem;
+    }
   }
 }
 </style>
