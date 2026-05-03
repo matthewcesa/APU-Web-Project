@@ -176,9 +176,8 @@ async function deleteCourse(courseId, event) {
 </script>
 
 <template>
+  <Header :user="user" />
   <div class="teacher-page">
-    <Header :user="user" />
-
     <main class="content">
       <section class="page-intro">
         <div>
@@ -194,50 +193,52 @@ async function deleteCourse(courseId, event) {
       <p v-else-if="error" class="error-message">
         {{ error }}
       </p>
+      
+      <template v-if="!showCreateForm">
+        <section v-if="courses.length === 0" class="empty-state">
+          <h2>No courses yet</h2>
+          <p>You are not enrolled in any course for now.</p>
+        </section>
 
-      <section v-else-if="courses.length === 0" class="empty-state">
-        <h2>No courses yet</h2>
-        <p>You are not enrolled in any course for now.</p>
-      </section>
-
-      <section v-else class="courses-grid">
-        <article
-          v-for="course in courses"
-          :key="course.course_id"
-          class="course-card"
-          @click="goToCourse(course.course_id)"
-        >
-          <div class="course-cover" :style="{ background: getCourseColor(course.course_id) }">
-            <span class="course-status">
-              {{ course.is_published ? 'Published' : 'Draft' }}
-            </span>
-          </div>
-
-          <div class="course-content">
-            <h2>{{ course.title }}</h2>
-
-            <p class="course-description">
-              {{ course.short_description || 'No description for this course.' }}
-            </p>
-
-            <div class="course-meta">
-              <span>Course</span>
-              <span v-if="course.join_code">Code: {{ course.join_code }}</span>
+        <section v-else class="courses-grid">
+          <article
+            v-for="course in courses"
+            :key="course.course_id"
+            class="course-card"
+            @click="goToCourse(course.course_id)"
+          >
+            <div class="course-cover" :style="{ background: getCourseColor(course.course_id) }">
+              <span class="course-status">
+                {{ course.is_published ? 'Published' : 'Draft' }}
+              </span>
             </div>
 
-            
-            <button 
-              class="delete-course-btn" 
-              @click.stop="deleteCourse(course.course_id, $event)"
-              title="Delete course"
-            >
-              delete
-            </button>
+            <div class="course-content">
+              <h2>{{ course.title }}</h2>
 
-          
-          </div>
-        </article>
-      </section>
+              <p class="course-description">
+                {{ course.short_description || 'No description for this course.' }}
+              </p>
+
+              <div class="course-meta">
+                <span>Course</span>
+                <span v-if="course.join_code">Code: {{ course.join_code }}</span>
+              </div>
+
+              
+              <button 
+                class="delete-course-btn" 
+                @click.stop="deleteCourse(course.course_id, $event)"
+                title="Delete course"
+              >
+                delete
+              </button>
+
+            
+            </div>
+          </article>
+        </section>
+      </template>
       <section class="create-course">
         <div>
           <p>Manage and create new courses for the platform.</p>
@@ -414,7 +415,6 @@ async function deleteCourse(courseId, event) {
 
 .primary-button:hover {
   background: #4f46e5;
-  transform: scale(1.02);
 }
 
 .form-section {
@@ -478,6 +478,56 @@ async function deleteCourse(courseId, event) {
 .delete-course-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(220, 38, 38, 0.15);
+}
+
+.secondary-button {
+  background: transparent;
+  color: #6366f1;
+  padding: 14px 28px;
+  border-radius: 12px;
+  border: 2px solid #6366f1;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondary-button:hover {
+  background: #eef2ff;
+}
+
+.error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #dc2626;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+.info-message {
+  color: #64748b;
+  font-size: 0.95rem;
+  padding: 10px 0;
+}
+
+.success-message {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  border-left: 4px solid #16a34a;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
 }
 
 @media (max-width: 768px) {
