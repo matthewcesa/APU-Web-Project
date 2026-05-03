@@ -27,6 +27,8 @@ const isTimerRunning = ref(false)
 const isEditing = ref(false)
 const editingQuestionId = ref(null)
 const editForm = ref(null)
+const settingsMessage = ref('')
+const settingsError = ref('')
 
 const newQuestion = ref({
   question_text: '',
@@ -160,24 +162,55 @@ function resetAnswers() {
   })
   answers.value = empty
 }
+
 async function updateQuizSettings() {
+  if (!quiz.value.title?.trim()) {
+    settingsMessage.value = ''
+    settingsError.value = 'Quiz title cannot be empty.'
+    return
+  }
+
+  const time = quiz.value.time_limit_minutes
+  if (!Number.isInteger(time) || time <= 0) {
+    settingsMessage.value = ''
+    settingsError.value = time === 0
+      ? 'A quiz of 0 minutes is not possible.'
+      : 'Invalid duration — must be a positive whole number.'
+    return
+  }
+
+  const attempts = quiz.value.max_attempts
+  if (attempts === null || attempts === undefined || attempts === '') {
+    settingsMessage.value = ''
+    settingsError.value = 'Max attempts cannot be empty.'
+    return
+  }
+  if (!Number.isInteger(attempts) || attempts < 0) {
+    settingsMessage.value = ''
+    settingsError.value = 'Max attempts must be a positive whole number.'
+    return
+  }
+
   try {
     await fetch(`http://localhost:3000/api/quizzes/${route.params.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        title: quiz.value.title, 
-        description: quiz.value.description, 
+      body: JSON.stringify({
+        title: quiz.value.title,
+        description: quiz.value.description,
         time_limit_minutes: quiz.value.time_limit_minutes,
         max_attempts: quiz.value.max_attempts,
-        type: quiz.value.type 
+        type: quiz.value.type
       })
     })
-    alert("Settings updated!")
-  } catch  { 
-    alert("Error updating settings") 
+    settingsError.value = ''
+    settingsMessage.value = 'Settings updated successfully.'
+  } catch {
+    settingsMessage.value = ''
+    settingsError.value = 'Error updating settings.'
   }
 }
+
 async function submitQuiz() {
   stopTimer()
   
@@ -249,7 +282,13 @@ async function saveQuestion() {
     }
     await loadQuiz()
     isEditing.value = false
-  } catch { alert("Error saving question") }
+    settingsError.value = ''
+    settingsMessage.value = 'Question saved successfully.'
+
+  } catch { 
+    settingsMessage.value = ''
+    settingsError.value = 'Error saving question.' 
+  }
 }
 
 function startEdit(q) {
@@ -309,6 +348,8 @@ onUnmounted(stopTimer)
         
 <div class="quiz-settings-panel">
   <h3>Quiz Configuration</h3>
+  <div v-if="settingsMessage" class="success-message">{{ settingsMessage }}</div>
+  <div v-if="settingsError" class="error-message">{{ settingsError }}</div>
   <div class="settings-grid">
     <div class="setting-item full-width">
       <label>Quiz Title</label>
@@ -329,14 +370,13 @@ onUnmounted(stopTimer)
       <label>Max Attempts</label>
       <input type="number" v-model.number="quiz.max_attempts" />
     </div>
-    
-    <button @click="updateQuizSettings" class="btn-save-settings">💾 Save Changes</button>
+    <button @click="updateQuizSettings" class="btn-save-settings">Save Changes</button>
   </div>
 </div>
           </div>
 
           <button @click="isEditing = !isEditing" class="add-btn">
-            {{ isEditing ? '✖ Cancel' : '➕ Add New Question' }}
+            {{ isEditing ? '✖ Cancel' : 'Add New Question' }}
           </button>
 
           <div v-if="isEditing" class="form-card">
@@ -359,7 +399,13 @@ onUnmounted(stopTimer)
               <div v-for="(opt, idx) in newQuestion.options" :key="idx" class="edit-opt-row">
                 <input type="checkbox" v-model="opt.is_correct" />
                 <input v-model="opt.option_text" :placeholder="'Choice ' + (idx + 1)" />
-                <button v-if="newQuestion.options.length > 2" @click="removeOptionField(idx)" type="button" class="btn-remove">×</button>
+                <button
+                  v-if="newQuestion.options.length > 2"
+                  @click="removeOptionField(idx)"
+                  type="button"
+                  class="btn-remove-inline"
+                  title="Remove option"
+                >Delete</button>
               </div>
               <button @click="addOptionField" type="button" class="btn-add-opt">+ Add option</button>
             </div>
@@ -676,6 +722,48 @@ onUnmounted(stopTimer)
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
+}
+
+.success-message {
+  background: #f0fdf4;
+  color: #15803d;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #bbf7d0;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.error-message {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.btn-remove-inline {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-remove-inline:hover {
+  background: #fecaca;
+  color: #b91c1c;
+  border-color: #f87171;
 }
 
 /* Tablet */
