@@ -435,7 +435,6 @@ async function deleteQuiz(quizId) {
                 <small class="module-badge">{{ quiz.module_title }}</small>
               </div>
 
-              <!-- tentatives restantes pour le student -->
               <div v-if="!isTeacher && quiz.max_attempts" class="attempts-info">
                 <span v-if="quiz.max_attempts === 0" class="attempts-exhausted">Unavailable</span>
               </div>
