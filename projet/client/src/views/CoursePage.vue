@@ -220,8 +220,9 @@ async function deleteQuiz(quizId) {
 </script>
 
 <template>
+  <Header :user="user" />
   <div class="course-page">
-    <Header :user="user" />
+    
     <main class="content">
       <button class="back-button" @click="goBack">← Back to courses</button>
 
@@ -367,8 +368,8 @@ async function deleteQuiz(quizId) {
         </section>
       </template>
     </main>
-    <Footer />
   </div>
+  <Footer />
 </template>
 
 <style scoped>

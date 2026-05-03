@@ -11,8 +11,9 @@ function goToLogin() {
 </script>
 
 <template>
+  <Header />
   <main class="landing-page">
-    <Header />
+    
 
     <section class="hero">
       <div class="hero-card">

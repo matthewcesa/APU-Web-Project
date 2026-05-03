@@ -7,8 +7,9 @@ const user = storedUser ? JSON.parse(storedUser) : null
 </script>
 
 <template>
+  <Header :user="user" />
   <div class="page">
-    <Header :user="user" />
+    
 
     <main class="content">
       <section class="card">
@@ -49,8 +50,9 @@ const user = storedUser ? JSON.parse(storedUser) : null
       </section>
     </main>
 
-    <Footer />
+    
   </div>
+  <Footer />
 </template>
 
 <style scoped>

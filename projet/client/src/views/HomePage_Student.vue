@@ -130,8 +130,9 @@ function goToCourse(courseId) {
 </script>
 
 <template>
+  <Header :user="user" />
   <div class="student-page">
-    <Header :user="user" />
+    
 
     <main class="content">
       <section class="page-intro">

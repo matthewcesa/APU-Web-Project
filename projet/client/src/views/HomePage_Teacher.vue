@@ -284,7 +284,6 @@ async function deleteCourse(courseId, event) {
 <style scoped>
 .teacher-page {
   min-height: 100vh;
-  background: #f8fafc;
   font-family: 'Inter', sans-serif;
 }
 

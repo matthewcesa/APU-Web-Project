@@ -140,8 +140,9 @@ async function deleteUser(account) {
 </script>
 
 <template>
+  <Header :user="user" />
   <div class="admin-page">
-    <Header :user="user" />
+    
 
     <main class="content">
       <section class="admin-header">
@@ -285,9 +286,8 @@ async function deleteUser(account) {
         </ul>
       </section>
     </main>
-
-    <Footer />
   </div>
+  <Footer />
 </template>
 
 <style scoped>

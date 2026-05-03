@@ -30,8 +30,9 @@ const teamMembers = [
 </script>
 
 <template>
+  <Header :user="user" />
   <div class="page">
-    <Header :user="user" />
+    
 
     <main class="content">
       <section class="card">
@@ -59,8 +60,9 @@ const teamMembers = [
       </section>
     </main>
 
-    <Footer />
+    
   </div>
+  <Footer />
 </template>
 
 <style scoped>
