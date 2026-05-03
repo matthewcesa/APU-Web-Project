@@ -60,6 +60,17 @@
   color: #a4a4a4;
 }
 
+.footer a {
+  color: #868686;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+
+.footer a:hover {
+  color: #535353;
+}
+
 @media (max-width: 1024px) {
   .footer {
     padding: 2.5rem 8%;
