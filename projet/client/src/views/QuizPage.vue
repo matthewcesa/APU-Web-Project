@@ -1375,7 +1375,7 @@ onUnmounted(stopTimer)
   background: #eef2ff;
 }
 
-/* --- Boutons Save / Cancel dans le bloc edit --- */
+/* Boutons Save / Cancel dans le bloc edit */
 .edit-actions {
   display: flex;
   gap: 10px;
@@ -1477,7 +1477,7 @@ onUnmounted(stopTimer)
   border-color: #a5b4fc;
 }
 
-/* --- Bouton Restart cohérent --- */
+/* Bouton Restart */
 .restart-button {
   margin-top: 16px;
   padding: 12px 22px;
@@ -1495,7 +1495,6 @@ onUnmounted(stopTimer)
   border-color: #c7d2fe;
 }
 
-/* Petites adaptations responsive si tu veux serrer un peu */
 @media (max-width: 768px) {
   .edit-options-list {
     gap: 8px;
