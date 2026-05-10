@@ -8,12 +8,12 @@ const user = storedUser ? JSON.parse(storedUser) : null
 const teamMembers = [
   {
     name: 'Antoine CRAUSER',
-    role: 'Fullstack development',
+    role: 'Fullstack Developer',
     description: 'Worked on both backend and frontend features',
   },
   {
     name: 'Matthew CESA',
-    role: 'Fullstack development',
+    role: 'Fullstack Developer',
     description: 'Worked on the backend and the professors management of courses',
   },
   {
